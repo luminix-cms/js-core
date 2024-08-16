@@ -1,25 +1,37 @@
+// Auth driver using dom
 
 
-import { AppFacade } from '../types/App'; 
-import { AuthCredentials, AuthFacade } from '../types/Auth';
-import { Model } from '../types/Model';
-import { JsonObject } from '../types/Support';
+import { AppFacade } from '../../types/App'; 
+import { AuthCredentials, AuthDriver } from '../../types/Auth';
+import { Model } from '../../types/Model';
+import { JsonObject } from '../../types/Support';
 
+export type DOMDriverOptions = {
+    routes?: {
+        login?: string;
+        logout?: string;
+    },
+}
 
-export default class Auth implements AuthFacade {
+export default class DOMDriver extends AuthDriver {
 
     private _user: Model | undefined;
-    // private driver: AuthDriver;
 
     constructor(
-        private readonly app: AppFacade
-    ) { }
+        private readonly app: AppFacade,
+        private readonly options: DOMDriverOptions = {},
+    ) {
+        super();
+    }
 
-    attempt(credentials: AuthCredentials, remember: boolean = false, onSubmit?: (e: Event) => void) {
+    attempt(
+        credentials: AuthCredentials,
+        remember: boolean = false,
+    ) {
         const form = document.createElement('form');
 
         form.method = 'post';
-        form.action = this.app.make('route').url('login');
+        form.action = this.app.make('route').url(this.options.routes?.login ?? 'login');
         form.style.display = 'none';
 
         const csrfToken = this.app.make('config').get('auth.csrf');
@@ -54,27 +66,20 @@ export default class Auth implements AuthFacade {
             form.appendChild(rememberInput);
         }
 
-        if (onSubmit) {
-            form.addEventListener('submit', onSubmit);
-        }
-
         document.body.appendChild(form);
-        form.submit();
-        
+
+        form.dispatchEvent(new Event('submit', { 
+            cancelable: true,
+            bubbles: true
+        }));
     }
 
-    check() {
-        const config = this.app.make('config');
-
-        return !!config.get('auth.user');
-    }
-
-    logout(onSubmit?: (e: Event) => void) {
+    logout() {
         // Append a form to the document and submit it
         const form = document.createElement('form');
 
         form.method = 'post';
-        form.action = this.app.make('route').url('logout');
+        form.action = this.app.make('route').url(this.options.routes?.logout ?? 'logout');
         form.style.display = 'none';
 
         const csrfToken = this.app.make('config').get('auth.csrf');
@@ -89,11 +94,10 @@ export default class Auth implements AuthFacade {
         }
         document.body.appendChild(form);
 
-        if (onSubmit) {
-            form.addEventListener('submit', onSubmit);
-        }
-
-        form.submit();
+        form.dispatchEvent(new Event('submit', { 
+            cancelable: true,
+            bubbles: true
+        }));
     }
 
     user(): Model | null {
@@ -112,7 +116,5 @@ export default class Auth implements AuthFacade {
         return this._user;
     }
 
-    id(): number | string | null {
-        return this.user()?.getKey() || null;
-    }
 }
+

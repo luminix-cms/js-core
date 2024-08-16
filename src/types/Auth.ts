@@ -14,3 +14,8 @@ export type AuthFacade = {
     id(): number | string | null;
 };
 
+export abstract class AuthDriver {
+    abstract attempt(credentials: AuthCredentials, remember: boolean): void;
+    abstract logout(): void;
+    abstract user(): Model | null;
+}
