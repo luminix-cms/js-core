@@ -106,7 +106,8 @@ export default class AuthService {
                 return;
             }
 
-            this._user = new User(userData as JsonObject); 
+            this._user = new User(userData as JsonObject);
+            this._user.exists = true;
         }
         return this._user;
     }
