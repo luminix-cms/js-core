@@ -23,6 +23,7 @@ import ModelNotPersistedException from '../exceptions/ModelNotPersistedException
 import { BuilderInterface as BuilderBase, Scope as ScopeBase, ExtendedOperator, BuilderGetOptions } from '../types/Builder';
 import { LogFacade } from '../types/Log';
 import { ConfigFacade } from '../types/Config';
+import AttributeNotFoundException from '../exceptions/AttributeNotFoundException';
 
 // import App from '../facades/App';
 // import Log from '../facades/Log';
@@ -67,7 +68,7 @@ export function BaseModelFactory(
             }
 
             if (['boolean', 'bool'].includes(cast)) {
-                return !!value;
+                return !!value && value !== "0";
             }
             if (['date', 'datetime', 'immutable_date', 'immutable_datetime'].includes(cast) && typeof value === 'string') {
                 return new Date(value);
@@ -133,14 +134,24 @@ export function BaseModelFactory(
     
         private makeAttributes(attributes: JsonObject)
         {
-            const { relations } = ModelFacade.schema(abstract);
+            const { relations, attributes: attributeDefs } = ModelFacade.schema(abstract);
     
             // remove relations from attributes
             const excludedKeys = Object.keys(relations || {});
             const newAttributes: JsonObject = Obj.omit(attributes, ...excludedKeys);
+
+            const keysToSetNull = (key: string) => {
+                const attribute = attributeDefs.find((att) => att.name == key);
+
+                if (!attribute) {
+                    throw new AttributeNotFoundException(abstract, key);
+                }
+                
+                return !(key in newAttributes) && attribute.nullable;
+            };
     
             // fill missing fillable attributes with null
-            this.fillable.filter((key) => !(key in newAttributes)).forEach((key) => {
+            this.fillable.filter(keysToSetNull).forEach((key) => {
                 newAttributes[key] = null;
             });
     
