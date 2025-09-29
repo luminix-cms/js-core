@@ -23,12 +23,6 @@ import ModelNotPersistedException from '../exceptions/ModelNotPersistedException
 import { BuilderInterface as BuilderBase, Scope as ScopeBase, ExtendedOperator, BuilderGetOptions } from '../types/Builder';
 import { LogFacade } from '../types/Log';
 import { ConfigFacade } from '../types/Config';
-import AttributeNotFoundException from '../exceptions/AttributeNotFoundException';
-
-// import App from '../facades/App';
-// import Log from '../facades/Log';
-// import Route from '../facades/Route';
-// import ModelFacade from '../facades/Model';
 
 type BuilderInterface = BuilderBase<ModelInterface, ModelPaginatedResponse>;
 type Scope = ScopeBase<ModelInterface, ModelPaginatedResponse>;
@@ -144,7 +138,7 @@ export function BaseModelFactory(
                 const attribute = attributeDefs.find((att) => att.name == key);
 
                 if (!attribute) {
-                    throw new AttributeNotFoundException(abstract, key);
+                    return false;
                 }
                 
                 return !(key in newAttributes) && attribute.nullable;
