@@ -196,6 +196,7 @@ export interface RelationMetaData {
     type: 'HasOne' | 'HasMany' | 'BelongsTo' | 'BelongsToMany' | 'MorphOne' | 'MorphMany' | 'MorphTo' | 'MorphToMany' | 'MorphedByMany',
     foreignKey: string | null,
     name: string,
+    morphType?: string,
 }
 
 
