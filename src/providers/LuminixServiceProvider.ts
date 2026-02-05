@@ -73,7 +73,7 @@ export default class LuminixServiceProvider extends ServiceProvider
             return new RouteService(
                 this.app.configuration.manifest?.routes ?? {},
                 this.app.make('error'),
-                () => this.app.make('http'),
+                () => this.app.make('http').getClient(),
                 this.app.configuration.app?.url
             );
         });
