@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - v0.x
+
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
     publish:
         runs-on: [ubuntu-latest]
@@ -19,6 +24,7 @@ jobs:
           uses: actions/setup-node@v6
           with:
             node-version: 20
+            registry-url: 'https://registry.npmjs.org'
 
         - uses: paulhatch/semantic-version@v5.4.0
           id: semver
