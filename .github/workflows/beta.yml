@@ -30,7 +30,6 @@ jobs:
 
         - name: Build, Tag & Publish
           run: |
-            npm logout
             npm install
             npm run build
             npm version ${{ steps.semver.outputs.version }} --no-git-tag-version
