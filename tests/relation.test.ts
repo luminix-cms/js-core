@@ -12,6 +12,7 @@ import HasOne from '../src/contracts/Relation/HasOne';
 import MorphMany from '../src/contracts/Relation/MorphMany';
 import MorphOne from '../src/contracts/Relation/MorphOne';
 import MorphTo from '../src/contracts/Relation/MorphTo';
+import MorphToMany from '../src/contracts/Relation/MorphToMany';
 import NotModelException from '../src/exceptions/NotModelException';
 import ModelInvalidRelatedTypeException from '../src/exceptions/ModelInvalidRelatedTypeException';
 import ModelNotPersistedException from '../src/exceptions/ModelNotPersistedException';
@@ -37,6 +38,8 @@ const {
         Comment,
         File,
         User,
+        Chair,
+        Tag,
     },
     data: {
         users,
@@ -80,6 +83,19 @@ const _post = (data = {} as any) => {
 const _put = (data = {} as any) => {
     (Http.put as any).mockReset();
     (Http.put as any).mockImplementationOnce(() => Promise.resolve(new Response({
+        config: {
+            headers: { 'Content-Type': 'application/json' } as any,
+        },
+        data,
+        headers: { 'Content-Type': 'application/json' },
+        status: 200,
+        statusText: 'OK',
+    })));
+};
+
+const _delete = (data = {} as any) => {
+    (Http.delete as any).mockReset();
+    (Http.delete as any).mockImplementationOnce(() => Promise.resolve(new Response({
         config: {
             headers: { 'Content-Type': 'application/json' } as any,
         },
@@ -575,6 +591,234 @@ describe('testing relations with lazy loading', () => {
         _put({ id: 401, path: '/b.jpg', type: 'image', attachable_id: 300, attachable_type: 'post' });
         await relation.save(_attachment2);
         expect((relation.getLoadedItems() as any).count()).toBe(2);
+    });
+
+});
+
+describe('testing BelongsToMany pivot methods', () => {
+
+    test("attachQuietly() calls the attach route with pivot data", async () => {
+        const chairInst = new Chair({ id: 1, name: 'Test', description: null });
+        chairInst.exists = true;
+
+        const relation = chairInst.usersRelation() as BelongsToMany;
+
+        _post({});
+        await relation.attachQuietly(5, { role: 'admin' });
+
+        expect(Http.post).toHaveBeenCalledWith('/api/luminix/chairs/1/users/5');
+        expect(Http.withData).toHaveBeenCalledWith({ role: 'admin' });
+    });
+
+    test("attachQuietly() sends empty pivot when none provided", async () => {
+        const chairInst = new Chair({ id: 2, name: 'Test', description: null });
+        chairInst.exists = true;
+
+        const relation = chairInst.usersRelation() as BelongsToMany;
+
+        _post({});
+        await relation.attachQuietly(7);
+
+        expect(Http.post).toHaveBeenCalledWith('/api/luminix/chairs/2/users/7');
+        expect(Http.withData).toHaveBeenCalledWith({});
+    });
+
+    test("attach() calls attachQuietly then fetches related and updates cache", async () => {
+        const chairInst = new Chair({ id: 1, name: 'Test', description: null });
+        chairInst.exists = true;
+
+        const relation = chairInst.usersRelation() as BelongsToMany;
+
+        // attachQuietly → POST
+        _post({});
+        // getRelated().find(id) → GET
+        _get({
+            data: [{ id: 5, name: 'User 5', email: 'u5@u.com', password: null }],
+            meta: { current_page: 1, last_page: 1, per_page: 1, total: 1, from: 1, to: 1, links: [] },
+            links: { first: '', last: '', prev: null, next: null },
+        });
+
+        await relation.attach(5);
+
+        expect(Http.post).toHaveBeenCalledWith('/api/luminix/chairs/1/users/5');
+        const items = relation.getLoadedItems() as any;
+        expect(items).not.toBeNull();
+        expect(items.pluck('id').toArray()).toContain(5);
+    });
+
+    test("detachQuietly() calls the detach route", async () => {
+        const chairInst = new Chair({ id: 1, name: 'Test', description: null });
+        chairInst.exists = true;
+
+        const relation = chairInst.usersRelation() as BelongsToMany;
+
+        _delete({});
+        await relation.detachQuietly(5);
+
+        expect(Http.delete).toHaveBeenCalledWith('/api/luminix/chairs/1/users/5');
+    });
+
+    test("detach() calls detachQuietly and removes item from cache", async () => {
+        const chairInst = new Chair({ id: 1, name: 'Test', description: null });
+        chairInst.exists = true;
+
+        const relation = chairInst.usersRelation() as BelongsToMany;
+
+        // Load items into cache via attach
+        _post({});
+        _get({
+            data: [{ id: 5, name: 'User 5', email: 'u5@u.com', password: null }],
+            meta: { current_page: 1, last_page: 1, per_page: 1, total: 1, from: 1, to: 1, links: [] },
+            links: { first: '', last: '', prev: null, next: null },
+        });
+        await relation.attach(5);
+        expect((relation.getLoadedItems() as any).count()).toBe(1);
+
+        // detach: DELETE then remove from cache
+        _delete({});
+        await relation.detach(5);
+
+        expect(Http.delete).toHaveBeenCalledWith('/api/luminix/chairs/1/users/5');
+        expect((relation.getLoadedItems() as any).count()).toBe(0);
+    });
+
+    test("syncQuietly() calls the sync route with ids as data", async () => {
+        const chairInst = new Chair({ id: 1, name: 'Test', description: null });
+        chairInst.exists = true;
+
+        const relation = chairInst.usersRelation() as BelongsToMany;
+
+        _put({});
+        await relation.syncQuietly([1, 2, 3]);
+
+        expect(Http.put).toHaveBeenCalledWith('/api/luminix/chairs/1/users');
+        expect(Http.withData).toHaveBeenCalledWith([1, 2, 3]);
+    });
+
+    test("sync() calls syncQuietly then refreshes items cache", async () => {
+        const chairInst = new Chair({ id: 1, name: 'Test', description: null });
+        chairInst.exists = true;
+
+        const relation = chairInst.usersRelation() as BelongsToMany;
+
+        _put({});
+        _get({
+            data: [
+                { id: 1, name: 'User 1', email: 'u1@u.com', password: null },
+                { id: 2, name: 'User 2', email: 'u2@u.com', password: null },
+            ],
+            meta: { current_page: 1, last_page: 1, per_page: 150, total: 2, from: 1, to: 2, links: [] },
+            links: { first: '', last: '', prev: null, next: null },
+        });
+        await relation.sync([1, 2]);
+
+        const items = relation.getLoadedItems() as any;
+        expect(items).not.toBeNull();
+        expect(items.count()).toBe(2);
+    });
+
+    test("syncWithPivotValuesQuietly() maps ids to pivot objects", async () => {
+        const chairInst = new Chair({ id: 1, name: 'Test', description: null });
+        chairInst.exists = true;
+
+        const relation = chairInst.usersRelation() as BelongsToMany;
+
+        _put({});
+        await relation.syncWithPivotValuesQuietly([1, 2], { role: 'member' });
+
+        expect(Http.put).toHaveBeenCalledWith('/api/luminix/chairs/1/users');
+        expect(Http.withData).toHaveBeenCalledWith([
+            { id: 1, role: 'member' },
+            { id: 2, role: 'member' },
+        ]);
+    });
+
+    test("syncWithPivotValues() calls syncWithPivotValuesQuietly then refreshes cache", async () => {
+        const chairInst = new Chair({ id: 1, name: 'Test', description: null });
+        chairInst.exists = true;
+
+        const relation = chairInst.usersRelation() as BelongsToMany;
+
+        _put({});
+        _get({
+            data: [{ id: 1, name: 'User 1', email: 'u1@u.com', password: null }],
+            meta: { current_page: 1, last_page: 1, per_page: 150, total: 1, from: 1, to: 1, links: [] },
+            links: { first: '', last: '', prev: null, next: null },
+        });
+        await relation.syncWithPivotValues([1], { role: 'admin' });
+
+        const items = relation.getLoadedItems() as any;
+        expect(items).not.toBeNull();
+        expect(items.count()).toBe(1);
+    });
+
+});
+
+describe('testing MorphToMany relation', () => {
+
+    test("MorphToMany relation type is correct", () => {
+        const postInst = new Post({ id: 1, title: 'Test', published_at: null, author_id: null });
+        postInst.exists = true;
+
+        const relation = postInst.tagsRelation();
+        expect(relation).toBeInstanceOf(MorphToMany);
+        expect(relation.isSingle()).toBe(false);
+        expect(relation.isMultiple()).toBe(true);
+    });
+
+    test("MorphToMany query() adds morph where conditions", async () => {
+        const postInst = new Post({ id: 42, title: 'Test', published_at: null, author_id: null });
+        postInst.exists = true;
+
+        const relation = postInst.tagsRelation() as MorphToMany;
+
+        _get({
+            data: [{ id: 1, name: 'javascript' }],
+            meta: { current_page: 1, last_page: 1, per_page: 150, total: 1, from: 1, to: 1, links: [] },
+            links: { first: '', last: '', prev: null, next: null },
+        });
+
+        await relation.all();
+
+        expect(Http.withQueryParameters).toHaveBeenCalledWith(expect.objectContaining({
+            where: expect.objectContaining({
+                taggable_id: 42,
+                taggable_type: 'post',
+            }),
+        }));
+    });
+
+    test("MorphToMany attachQuietly() calls the attach route", async () => {
+        const postInst = new Post({ id: 1, title: 'Test', published_at: null, author_id: null });
+        postInst.exists = true;
+
+        const relation = postInst.tagsRelation() as MorphToMany;
+
+        _post({});
+        await relation.attachQuietly(3);
+
+        expect(Http.post).toHaveBeenCalledWith('/api/luminix/posts/1/tags/3');
+    });
+
+    test("MorphToMany syncQuietly() calls the sync route", async () => {
+        const postInst = new Post({ id: 1, title: 'Test', published_at: null, author_id: null });
+        postInst.exists = true;
+
+        const relation = postInst.tagsRelation() as MorphToMany;
+
+        _put({});
+        await relation.syncQuietly([1, 2]);
+
+        expect(Http.put).toHaveBeenCalledWith('/api/luminix/posts/1/tags');
+        expect(Http.withData).toHaveBeenCalledWith([1, 2]);
+    });
+
+    test("tag.postsRelation() returns a MorphToMany relation", () => {
+        const tagInst = new Tag({ id: 1, name: 'javascript' });
+        tagInst.exists = true;
+
+        const relation = tagInst.postsRelation();
+        expect(relation).toBeInstanceOf(MorphToMany);
     });
 
 });

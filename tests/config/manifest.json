@@ -614,6 +614,12 @@
                     "type": "MorphMany",
                     "model": "attachment",
                     "foreignKey": null
+                },
+                "tags": {
+                    "type": "MorphToMany",
+                    "model": "tag",
+                    "foreignKey": null,
+                    "morphType": "taggable_type"
                 }
             },
             "casts": {
@@ -865,6 +871,88 @@
             },
             "casts": { "id": "int" },
             "class": "App\\Models\\Chair"
+        },
+        "tag": {
+            "fillable": ["name"],
+            "softDeletes": false,
+            "importable": false,
+            "exportable": false,
+            "primaryKey": "id",
+            "timestamps": true,
+            "labeledBy": "name",
+            "displayName": { "singular": "Tag", "plural": "Tags" },
+            "attributes": [
+                {
+                    "name": "id",
+                    "phpType": "int",
+                    "type": "bigint unsigned",
+                    "increments": true,
+                    "nullable": false,
+                    "default": null,
+                    "primary": true,
+                    "unique": true,
+                    "fillable": false,
+                    "appended": null,
+                    "cast": "int",
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "name",
+                    "phpType": "string",
+                    "type": "varchar(255)",
+                    "increments": false,
+                    "nullable": false,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": true,
+                    "appended": null,
+                    "cast": null,
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "created_at",
+                    "phpType": "\\Carbon\\CarbonInterface",
+                    "type": "datetime",
+                    "increments": false,
+                    "nullable": true,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": false,
+                    "appended": null,
+                    "cast": "datetime",
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "updated_at",
+                    "phpType": "\\Carbon\\CarbonInterface",
+                    "type": "datetime",
+                    "increments": false,
+                    "nullable": true,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": false,
+                    "appended": null,
+                    "cast": "datetime",
+                    "virtual": false,
+                    "hidden": false
+                }
+            ],
+            "relations": {
+                "posts": {
+                    "type": "MorphToMany",
+                    "model": "post",
+                    "foreignKey": null,
+                    "morphType": "taggable_type"
+                }
+            },
+            "casts": { "id": "int" },
+            "class": "App\\Models\\Tag"
         }
     },
     "routes": {
@@ -899,7 +987,10 @@
                 "store": ["api\/luminix\/posts", "post"],
                 "update": ["api\/luminix\/posts\/{id}", "put"],
                 "destroy": ["api\/luminix\/posts\/{id}", "delete"],
-                "destroyMany": ["api\/luminix\/posts", "delete"]
+                "destroyMany": ["api\/luminix\/posts", "delete"],
+                "tags:attach": ["api\/luminix\/posts\/{id}\/tags\/{itemId}", "post"],
+                "tags:detach": ["api\/luminix\/posts\/{id}\/tags\/{itemId}", "delete"],
+                "tags:sync": ["api\/luminix\/posts\/{id}\/tags", "put"]
             },
             "user": {
                 "index": ["api\/luminix\/users", "get"],
@@ -916,7 +1007,21 @@
                 "store": ["api\/luminix\/chairs", "post"],
                 "update": ["api\/luminix\/chairs\/{id}", "put"],
                 "destroy": ["api\/luminix\/chairs\/{id}", "delete"],
-                "destroyMany": ["api\/luminix\/chairs", "delete"]
+                "destroyMany": ["api\/luminix\/chairs", "delete"],
+                "users:attach": ["api\/luminix\/chairs\/{id}\/users\/{itemId}", "post"],
+                "users:detach": ["api\/luminix\/chairs\/{id}\/users\/{itemId}", "delete"],
+                "users:sync": ["api\/luminix\/chairs\/{id}\/users", "put"]
+            },
+            "tag": {
+                "index": ["api\/luminix\/tags", "get"],
+                "show": ["api\/luminix\/tags\/{id}", "get"],
+                "store": ["api\/luminix\/tags", "post"],
+                "update": ["api\/luminix\/tags\/{id}", "put"],
+                "destroy": ["api\/luminix\/tags\/{id}", "delete"],
+                "destroyMany": ["api\/luminix\/tags", "delete"],
+                "posts:attach": ["api\/luminix\/tags\/{id}\/posts\/{itemId}", "post"],
+                "posts:detach": ["api\/luminix\/tags\/{id}\/posts\/{itemId}", "delete"],
+                "posts:sync": ["api\/luminix\/tags\/{id}\/posts", "put"]
             }
         },
         "login": ["login", "get", "post"],

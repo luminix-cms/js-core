@@ -30,6 +30,7 @@ const Attachment = baseModel.make('attachment');
 const Comment = baseModel.make('post_comment');
 
 const Chair = baseModel.make('chair');
+const Tag = baseModel.make('tag');
 
 /* * */
 
@@ -256,6 +257,7 @@ export default {
         Attachment,
         Comment,
         Chair,
+        Tag,
     },
     data: {
         users,
