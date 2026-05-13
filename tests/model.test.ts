@@ -22,17 +22,19 @@ beforeEach(() => {
     jest.resetModules();
 });
 
-const { 
-    app: { 
-        baseModel, 
+const {
+    app: {
+        baseModel,
     },
     models: {
         User,
+        Post,
         Attachment,
         Comment,
     },
     data: {
         users,
+        posts,
         //
         user,
         post,
@@ -69,7 +71,6 @@ describe('testing models', () => {
         expect(Http.withData).toHaveBeenCalledWith({
             name: 'John Doe',
             email: 'johndoe@example.com',
-            password: null,
         });
 
         expect(user1.id).toBe(1);
@@ -171,7 +172,6 @@ describe('testing models', () => {
         expect(Http.withData).toHaveBeenCalledWith({
             name: 'John Doe',
             email: 'johndoe@example.com',
-            password: null,
         });
 
         user.name = 'Jane Doe';
@@ -226,7 +226,6 @@ describe('testing models', () => {
         expect(Http.withData).toHaveBeenCalledWith({
             name: 'John Doe',
             email: 'johndoe@example.com',
-            password: null,
         });
 
         comment.body = 'First Comment Updated';
@@ -274,12 +273,11 @@ describe('testing models', () => {
         expect(Http.withData).toHaveBeenCalledWith({
             name: 'John Doe',
             email: 'johndoe@example.com',
-            password: null,
         });
 
         /* * */
 
-        (Http.delete as any).mockImplementationOnce(() => Promise.resolve(new Response({ 
+        (Http.delete as any).mockImplementationOnce(() => Promise.resolve(new Response({
             config: {
                 headers: { 'Content-Type': 'application/json' } as any,
             },
@@ -288,7 +286,7 @@ describe('testing models', () => {
                 email: 'johndoe@example.com',
             },
             headers: { 'Content-Type': 'application/json' },
-            status: 204, 
+            status: 204,
             statusText: 'OK',
         })));
 
@@ -322,7 +320,6 @@ describe('testing models', () => {
         expect(Http.withData).toHaveBeenCalledWith({
             name: 'John Doe',
             email: 'johndoe@example.com',
-            password: null,
         });
 
         /* * */
@@ -366,7 +363,6 @@ describe('testing models', () => {
         expect(Http.withData).toHaveBeenCalledWith({
             name: 'John Doe',
             email: 'johndoe@example.com',
-            password: null,
         });
     });
 
@@ -483,12 +479,8 @@ describe('testing models', () => {
     });
 
     test('model errors', async () => {
-        expect(async () => await Attachment.create({})).rejects.toThrow(RouteNotFoundException);
-        expect(async () => await Attachment.update(1, { path: '/path/to/update_attachment.jpg' })).rejects.toThrow(RouteNotFoundException);
-        expect(async () => await Attachment.delete(1)).rejects.toThrow(RouteNotFoundException);
-        expect(async () => await Attachment.find(1)).rejects.toThrow(RouteNotFoundException);
-        expect(async () => await Attachment.restore(1)).rejects.toThrow(RouteNotFoundException);
-        expect(async () => await Attachment.forceDelete(1)).rejects.toThrow(RouteNotFoundException);
+        // Attachment has no restoreMany route in the manifest
+        await expect(Attachment.restore([1, 2, 3])).rejects.toThrow(RouteNotFoundException);
     });
 
     test('model get relation constructors', () => {
@@ -626,6 +618,55 @@ describe('testing models', () => {
         }
 
         expect(user.dump()).toEqual(console.log(user.toJson()));
+    });
+
+    test('attribute access uses backend casing (no camelCase conversion)', () => {
+        const post = posts.first()!;
+        // Access via snake_case (matches backend)
+        expect(post.created_at).toBeInstanceOf(Date);
+        expect(post.published_at).toBeInstanceOf(Date);
+        // camelCase does NOT map to snake_case
+        expect((post as any).createdAt).toBeUndefined();
+        expect((post as any).publishedAt).toBeUndefined();
+    });
+
+    test('model isDirty and diff', () => {
+        const freshUser = new User({ id: 99, name: 'Original', email: 'orig@test.com', password: null });
+        expect(freshUser.isDirty).toBe(false);
+        expect(freshUser.diff()).toEqual({});
+
+        freshUser.name = 'Modified';
+        expect(freshUser.isDirty).toBe(true);
+        expect(freshUser.diff()).toEqual({ name: 'Modified' });
+    });
+
+    test('model toJson serializes attributes', () => {
+        const freshUser = new User({ id: 5, name: 'Test', email: 'test@test.com', password: null });
+        const json = freshUser.toJson();
+        expect(json.id).toBe(5);
+        expect(json.name).toBe('Test');
+        expect(json.email).toBe('test@test.com');
+    });
+
+    test('model casts datetime to Date', () => {
+        const post = posts.first()!;
+        expect(post.published_at).toBeInstanceOf(Date);
+        expect((post.published_at as Date).toISOString()).toBe('2021-01-01T00:00:00.000Z');
+
+        const user = users.first()!;
+        expect(user.created_at).toBeInstanceOf(Date);
+    });
+
+    test('model singular and plural names', () => {
+        expect(User.singular()).toBe('User');
+        expect(User.plural()).toBe('Users');
+        expect(Post.singular()).toBe('Post');
+        expect(Post.plural()).toBe('Posts');
+    });
+
+    test('model getLabel returns labeledBy field value', () => {
+        const freshUser = new User({ id: 1, name: 'John Doe', email: 'j@j.com', password: null });
+        expect(freshUser.getLabel()).toBe('John Doe');
     });
 
 });

@@ -1,113 +1,619 @@
 {
     "models": {
         "file": {
-            "fillable": [
-                "path",
-                "type",
-                "attachment_id"
-            ],
+            "fillable": ["path", "type", "attachment_id"],
             "softDeletes": true,
             "importable": false,
             "exportable": false,
             "primaryKey": "id",
             "timestamps": true,
+            "labeledBy": "path",
+            "displayName": { "singular": "File", "plural": "Files" },
+            "attributes": [
+                {
+                    "name": "id",
+                    "phpType": "int",
+                    "type": "bigint unsigned",
+                    "increments": true,
+                    "nullable": false,
+                    "default": null,
+                    "primary": true,
+                    "unique": true,
+                    "fillable": false,
+                    "appended": null,
+                    "cast": "int",
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "path",
+                    "phpType": "string",
+                    "type": "varchar(255)",
+                    "increments": false,
+                    "nullable": false,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": true,
+                    "appended": null,
+                    "cast": null,
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "type",
+                    "phpType": "string",
+                    "type": "varchar(255)",
+                    "increments": false,
+                    "nullable": true,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": true,
+                    "appended": null,
+                    "cast": null,
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "attachment_id",
+                    "phpType": "int",
+                    "type": "bigint",
+                    "increments": false,
+                    "nullable": true,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": true,
+                    "appended": null,
+                    "cast": null,
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "created_at",
+                    "phpType": "\\Carbon\\CarbonInterface",
+                    "type": "datetime",
+                    "increments": false,
+                    "nullable": true,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": false,
+                    "appended": null,
+                    "cast": "datetime",
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "updated_at",
+                    "phpType": "\\Carbon\\CarbonInterface",
+                    "type": "datetime",
+                    "increments": false,
+                    "nullable": true,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": false,
+                    "appended": null,
+                    "cast": "datetime",
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "deleted_at",
+                    "phpType": "\\Carbon\\CarbonInterface",
+                    "type": "datetime",
+                    "increments": false,
+                    "nullable": true,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": false,
+                    "appended": null,
+                    "cast": "datetime",
+                    "virtual": false,
+                    "hidden": false
+                }
+            ],
             "relations": {
                 "attachment": {
                     "type": "MorphOne",
-                    "model": "attachment"
+                    "model": "attachment",
+                    "foreignKey": null
                 }
             },
-            "casts": {
-                "id": "int"
-            },
+            "casts": { "id": "int" },
             "class": "App\\Models\\File"
         },
         "attachment": {
-            "fillable": [
-                "path",
-                "type",
-                "attachable_id",
-                "attachable_type",
-                "size"
-            ],
+            "fillable": ["path", "type", "attachable_id", "attachable_type", "size"],
             "softDeletes": true,
             "importable": false,
             "exportable": false,
             "primaryKey": "id",
             "timestamps": true,
+            "labeledBy": "path",
+            "displayName": { "singular": "Attachment", "plural": "Attachments" },
+            "attributes": [
+                {
+                    "name": "id",
+                    "phpType": "int",
+                    "type": "bigint unsigned",
+                    "increments": true,
+                    "nullable": false,
+                    "default": null,
+                    "primary": true,
+                    "unique": true,
+                    "fillable": false,
+                    "appended": null,
+                    "cast": "int",
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "path",
+                    "phpType": "string",
+                    "type": "varchar(255)",
+                    "increments": false,
+                    "nullable": false,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": true,
+                    "appended": null,
+                    "cast": null,
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "type",
+                    "phpType": "string",
+                    "type": "varchar(255)",
+                    "increments": false,
+                    "nullable": true,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": true,
+                    "appended": null,
+                    "cast": null,
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "attachable_id",
+                    "phpType": "int",
+                    "type": "bigint",
+                    "increments": false,
+                    "nullable": false,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": true,
+                    "appended": null,
+                    "cast": null,
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "attachable_type",
+                    "phpType": "string",
+                    "type": "varchar(255)",
+                    "increments": false,
+                    "nullable": false,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": true,
+                    "appended": null,
+                    "cast": null,
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "size",
+                    "phpType": "int",
+                    "type": "bigint unsigned",
+                    "increments": false,
+                    "nullable": true,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": true,
+                    "appended": null,
+                    "cast": "integer",
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "author_id",
+                    "phpType": "int",
+                    "type": "bigint",
+                    "increments": false,
+                    "nullable": true,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": false,
+                    "appended": null,
+                    "cast": null,
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "created_at",
+                    "phpType": "\\Carbon\\CarbonInterface",
+                    "type": "datetime",
+                    "increments": false,
+                    "nullable": true,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": false,
+                    "appended": null,
+                    "cast": "datetime",
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "updated_at",
+                    "phpType": "\\Carbon\\CarbonInterface",
+                    "type": "datetime",
+                    "increments": false,
+                    "nullable": true,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": false,
+                    "appended": null,
+                    "cast": "datetime",
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "deleted_at",
+                    "phpType": "\\Carbon\\CarbonInterface",
+                    "type": "datetime",
+                    "increments": false,
+                    "nullable": true,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": false,
+                    "appended": null,
+                    "cast": "datetime",
+                    "virtual": false,
+                    "hidden": false
+                }
+            ],
             "relations": {
                 "attachable": {
                     "type": "MorphTo",
-                    "model": "attachment"
+                    "model": "attachment",
+                    "foreignKey": "attachable_id"
                 },
                 "author": {
                     "type": "BelongsTo",
-                    "model": "user"
+                    "model": "user",
+                    "foreignKey": "author_id"
                 },
                 "file": {
                     "type": "HasOne",
-                    "model": "file"
+                    "model": "file",
+                    "foreignKey": "attachment_id"
                 }
             },
-            "casts": {
-                "id": "int",
-                "size": "integer"
-            },
+            "casts": { "id": "int", "size": "integer" },
             "class": "App\\Models\\Attachment"
         },
         "post_comment": {
-            "fillable": [
-                "post_id",
-                "user_id",
-                "body"
-            ],
+            "fillable": ["post_id", "user_id", "body"],
             "softDeletes": false,
             "importable": false,
             "exportable": false,
             "primaryKey": "id",
             "timestamps": true,
+            "labeledBy": "body",
+            "displayName": { "singular": "Comment", "plural": "Comments" },
+            "attributes": [
+                {
+                    "name": "id",
+                    "phpType": "int",
+                    "type": "bigint unsigned",
+                    "increments": true,
+                    "nullable": false,
+                    "default": null,
+                    "primary": true,
+                    "unique": true,
+                    "fillable": false,
+                    "appended": null,
+                    "cast": "int",
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "post_id",
+                    "phpType": "int",
+                    "type": "bigint",
+                    "increments": false,
+                    "nullable": false,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": true,
+                    "appended": null,
+                    "cast": null,
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "user_id",
+                    "phpType": "int",
+                    "type": "bigint",
+                    "increments": false,
+                    "nullable": false,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": true,
+                    "appended": null,
+                    "cast": null,
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "body",
+                    "phpType": "string",
+                    "type": "text",
+                    "increments": false,
+                    "nullable": false,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": true,
+                    "appended": null,
+                    "cast": null,
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "created_at",
+                    "phpType": "\\Carbon\\CarbonInterface",
+                    "type": "datetime",
+                    "increments": false,
+                    "nullable": true,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": false,
+                    "appended": null,
+                    "cast": "datetime",
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "updated_at",
+                    "phpType": "\\Carbon\\CarbonInterface",
+                    "type": "datetime",
+                    "increments": false,
+                    "nullable": true,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": false,
+                    "appended": null,
+                    "cast": "datetime",
+                    "virtual": false,
+                    "hidden": false
+                }
+            ],
             "relations": {
                 "post": {
                     "type": "BelongsTo",
-                    "model": "post"
+                    "model": "post",
+                    "foreignKey": "post_id"
                 },
                 "user": {
                     "type": "BelongsTo",
-                    "model": "user"
+                    "model": "user",
+                    "foreignKey": "user_id"
                 }
             },
-            "casts": {
-                "id": "int"
-            },
+            "casts": { "id": "int" },
             "class": "App\\Models\\PostComment"
         },
         "post": {
-            "fillable": [
-                "title",
-                "description",
-                "author_id",
-                "content",
-                "slug",
-                "published_at",
-                "published"
-            ],
+            "fillable": ["title", "description", "author_id", "content", "slug", "published_at", "published"],
             "softDeletes": false,
             "importable": false,
             "exportable": false,
             "primaryKey": "id",
             "timestamps": true,
+            "labeledBy": "title",
+            "displayName": { "singular": "Post", "plural": "Posts" },
+            "attributes": [
+                {
+                    "name": "id",
+                    "phpType": "int",
+                    "type": "bigint unsigned",
+                    "increments": true,
+                    "nullable": false,
+                    "default": null,
+                    "primary": true,
+                    "unique": true,
+                    "fillable": false,
+                    "appended": null,
+                    "cast": "int",
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "title",
+                    "phpType": "string",
+                    "type": "varchar(255)",
+                    "increments": false,
+                    "nullable": false,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": true,
+                    "appended": null,
+                    "cast": null,
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "description",
+                    "phpType": "string",
+                    "type": "text",
+                    "increments": false,
+                    "nullable": true,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": true,
+                    "appended": null,
+                    "cast": null,
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "author_id",
+                    "phpType": "int",
+                    "type": "bigint",
+                    "increments": false,
+                    "nullable": false,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": true,
+                    "appended": null,
+                    "cast": null,
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "content",
+                    "phpType": "mixed",
+                    "type": "json",
+                    "increments": false,
+                    "nullable": true,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": true,
+                    "appended": null,
+                    "cast": "Arandu\\LaravelSafeJsonCast\\Json",
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "slug",
+                    "phpType": "string",
+                    "type": "varchar(255)",
+                    "increments": false,
+                    "nullable": true,
+                    "default": null,
+                    "primary": false,
+                    "unique": true,
+                    "fillable": true,
+                    "appended": null,
+                    "cast": null,
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "published_at",
+                    "phpType": "\\Carbon\\CarbonInterface",
+                    "type": "datetime",
+                    "increments": false,
+                    "nullable": true,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": true,
+                    "appended": null,
+                    "cast": "datetime",
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "published",
+                    "phpType": "bool",
+                    "type": "tinyint(1)",
+                    "increments": false,
+                    "nullable": false,
+                    "default": "0",
+                    "primary": false,
+                    "unique": false,
+                    "fillable": true,
+                    "appended": null,
+                    "cast": "boolean",
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "likes",
+                    "phpType": "int",
+                    "type": "int",
+                    "increments": false,
+                    "nullable": false,
+                    "default": "0",
+                    "primary": false,
+                    "unique": false,
+                    "fillable": false,
+                    "appended": null,
+                    "cast": "integer",
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "created_at",
+                    "phpType": "\\Carbon\\CarbonInterface",
+                    "type": "datetime",
+                    "increments": false,
+                    "nullable": true,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": false,
+                    "appended": null,
+                    "cast": "datetime",
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "updated_at",
+                    "phpType": "\\Carbon\\CarbonInterface",
+                    "type": "datetime",
+                    "increments": false,
+                    "nullable": true,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": false,
+                    "appended": null,
+                    "cast": "datetime",
+                    "virtual": false,
+                    "hidden": false
+                }
+            ],
             "relations": {
                 "author": {
                     "type": "BelongsTo",
-                    "model": "user"
+                    "model": "user",
+                    "foreignKey": "author_id"
                 },
                 "comments": {
                     "type": "HasMany",
-                    "model": "post_comment"
+                    "model": "post_comment",
+                    "foreignKey": "post_id"
                 },
                 "attachments": {
                     "type": "MorphMany",
-                    "model": "attachment"
+                    "model": "attachment",
+                    "foreignKey": null
                 }
             },
             "casts": {
@@ -120,32 +626,141 @@
             "class": "App\\Models\\Post"
         },
         "user": {
-            "fillable": [
-                "name",
-                "email",
-                "password"
-            ],
+            "fillable": ["name", "email", "password"],
             "softDeletes": false,
             "importable": false,
             "exportable": false,
             "primaryKey": "id",
             "timestamps": true,
+            "labeledBy": "name",
+            "displayName": { "singular": "User", "plural": "Users" },
+            "attributes": [
+                {
+                    "name": "id",
+                    "phpType": "int",
+                    "type": "bigint unsigned",
+                    "increments": true,
+                    "nullable": false,
+                    "default": null,
+                    "primary": true,
+                    "unique": true,
+                    "fillable": false,
+                    "appended": null,
+                    "cast": "int",
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "name",
+                    "phpType": "string",
+                    "type": "varchar(255)",
+                    "increments": false,
+                    "nullable": false,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": true,
+                    "appended": null,
+                    "cast": null,
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "email",
+                    "phpType": "string",
+                    "type": "varchar(255)",
+                    "increments": false,
+                    "nullable": false,
+                    "default": null,
+                    "primary": false,
+                    "unique": true,
+                    "fillable": true,
+                    "appended": null,
+                    "cast": null,
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "password",
+                    "phpType": "string",
+                    "type": "varchar(255)",
+                    "increments": false,
+                    "nullable": false,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": true,
+                    "appended": null,
+                    "cast": "hashed",
+                    "virtual": false,
+                    "hidden": true
+                },
+                {
+                    "name": "email_verified_at",
+                    "phpType": "\\Carbon\\CarbonInterface",
+                    "type": "datetime",
+                    "increments": false,
+                    "nullable": true,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": false,
+                    "appended": null,
+                    "cast": "datetime",
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "created_at",
+                    "phpType": "\\Carbon\\CarbonInterface",
+                    "type": "datetime",
+                    "increments": false,
+                    "nullable": true,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": false,
+                    "appended": null,
+                    "cast": "datetime",
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "updated_at",
+                    "phpType": "\\Carbon\\CarbonInterface",
+                    "type": "datetime",
+                    "increments": false,
+                    "nullable": true,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": false,
+                    "appended": null,
+                    "cast": "datetime",
+                    "virtual": false,
+                    "hidden": false
+                }
+            ],
             "relations": {
                 "posts": {
                     "type": "HasMany",
-                    "model": "post"
+                    "model": "post",
+                    "foreignKey": "author_id"
                 },
                 "comments": {
                     "type": "HasMany",
-                    "model": "post_comment"
+                    "model": "post_comment",
+                    "foreignKey": "user_id"
                 },
                 "attachments": {
                     "type": "MorphMany",
-                    "model": "attachment"
+                    "model": "attachment",
+                    "foreignKey": null
                 },
                 "chairs": {
                     "type": "BelongsToMany",
-                    "model": "chair"
+                    "model": "chair",
+                    "foreignKey": null
                 }
             },
             "casts": {
@@ -156,24 +771,99 @@
             "class": "App\\Models\\User"
         },
         "chair": {
-            "fillable": [
-                "name", 
-                "description"
-            ],
+            "fillable": ["name", "description"],
             "softDeletes": false,
             "importable": false,
             "exportable": false,
             "primaryKey": "id",
             "timestamps": true,
+            "labeledBy": "name",
+            "displayName": { "singular": "Chair", "plural": "Chairs" },
+            "attributes": [
+                {
+                    "name": "id",
+                    "phpType": "int",
+                    "type": "bigint unsigned",
+                    "increments": true,
+                    "nullable": false,
+                    "default": null,
+                    "primary": true,
+                    "unique": true,
+                    "fillable": false,
+                    "appended": null,
+                    "cast": "int",
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "name",
+                    "phpType": "string",
+                    "type": "varchar(255)",
+                    "increments": false,
+                    "nullable": false,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": true,
+                    "appended": null,
+                    "cast": null,
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "description",
+                    "phpType": "string",
+                    "type": "text",
+                    "increments": false,
+                    "nullable": true,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": true,
+                    "appended": null,
+                    "cast": null,
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "created_at",
+                    "phpType": "\\Carbon\\CarbonInterface",
+                    "type": "datetime",
+                    "increments": false,
+                    "nullable": true,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": false,
+                    "appended": null,
+                    "cast": "datetime",
+                    "virtual": false,
+                    "hidden": false
+                },
+                {
+                    "name": "updated_at",
+                    "phpType": "\\Carbon\\CarbonInterface",
+                    "type": "datetime",
+                    "increments": false,
+                    "nullable": true,
+                    "default": null,
+                    "primary": false,
+                    "unique": false,
+                    "fillable": false,
+                    "appended": null,
+                    "cast": "datetime",
+                    "virtual": false,
+                    "hidden": false
+                }
+            ],
             "relations": {
                 "users": {
                     "type": "BelongsToMany",
-                    "model": "user"
+                    "model": "user",
+                    "foreignKey": null
                 }
             },
-            "casts": {
-                "id": "int"
-            },
+            "casts": { "id": "int" },
             "class": "App\\Models\\Chair"
         }
     },

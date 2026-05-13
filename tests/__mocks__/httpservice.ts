@@ -27,6 +27,12 @@ const mockHttpService = {
     withData: jest.fn(function () {
         return this;
     }),
+    withOptions: jest.fn(function () {
+        return this;
+    }),
+    getClient: jest.fn(function () {
+        return this;
+    }),
 };
 
 export default mockHttpService;

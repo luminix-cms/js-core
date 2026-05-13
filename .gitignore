@@ -2,4 +2,6 @@ node_modules/
 dist/
 coverage/
 types/
+.vscode/
+.claude/
 .DS_Store

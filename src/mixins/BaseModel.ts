@@ -128,7 +128,7 @@ export function BaseModelFactory(
     
         private makeAttributes(attributes: JsonObject)
         {
-            const { relations, attributes: attributeDefs } = ModelFacade.schema(abstract);
+            const { relations, attributes: attributeDefs = [] } = ModelFacade.schema(abstract);
     
             // remove relations from attributes
             const excludedKeys = Object.keys(relations || {});
