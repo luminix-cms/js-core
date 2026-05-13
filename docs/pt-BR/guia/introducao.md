@@ -36,8 +36,8 @@ Ela fornece:
 Para usar `@luminix/core`, você precisa:
 
 1. Uma aplicação Laravel 11 com os pacotes PHP instalados:
-   - [`luminix/backend`](../../../../backend/README.md) — gera a API REST
-   - [`luminix/frontend`](../../../../frontend/README.md) — injeta os dados de boot na página
+   - [`luminix/backend`](https://github.com/luminix-cms/backend) — gera a API REST
+   - [`luminix/frontend`](https://github.com/luminix-cms/frontend) — injeta os dados de boot na página
 
 2. A diretiva Blade `@luminixEmbed()` presente na página onde o JavaScript é carregado (ou o arquivo JSON gerado por `php artisan luminix:manifest` disponível em tempo de build)
 

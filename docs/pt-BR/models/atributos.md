@@ -2,21 +2,21 @@
 
 ## Acessando atributos
 
-Os atributos de um model são acessados diretamente como propriedades. O Luminix converte automaticamente entre `snake_case` (backend) e `camelCase` (JavaScript):
+Os atributos de um model são acessados diretamente como propriedades, usando o mesmo nome definido no backend:
 
 ```typescript
 const user = await User.find(1);
 
-user.name;          // 'João Silva'
-user.email;         // 'joao@example.com'
-user.avatarSrc;     // ← camelCase de 'avatar_src'
-user.createdAt;     // Date { ... }
-user.emailVerifiedAt; // Date { ... } ou null
+user.name;            // 'João Silva'
+user.email;           // 'joao@example.com'
+user.avatar_src;      // 'https://example.com/avatar.jpg'
+user.created_at;      // Date { ... }
+user.email_verified_at; // Date { ... } ou null
 ```
 
 ## O objeto `attributes`
 
-O armazenamento interno fica em `user.attributes`, sempre em `snake_case`:
+O armazenamento interno fica em `user.attributes`:
 
 ```typescript
 user.attributes;
@@ -42,8 +42,8 @@ Os casts definidos no model Eloquent são aplicados automaticamente:
 Os timestamps do Laravel (`created_at`, `updated_at`, `deleted_at`) são automaticamente convertidos para `Date`:
 
 ```typescript
-user.createdAt instanceof Date; // true
-user.createdAt.toLocaleDateString('pt-BR'); // '01/01/2024'
+user.created_at instanceof Date; // true
+user.created_at.toLocaleDateString('pt-BR'); // '01/01/2024'
 ```
 
 Plugins podem adicionar suporte a outros tipos de cast (ex: Day.js via `@luminix/plugin-dayjs-cast`).
@@ -105,10 +105,10 @@ user.original;
 O `@luminix/core` usa um `Proxy` JavaScript para interceptar o acesso a propriedades. A ordem de resolução ao acessar `model.propriedade` é:
 
 1. Propriedades nativas da classe (`exists`, `isDirty`, `attributes`, etc.)
-2. Relacionamentos pré-carregados (retorna instância(s) do model relacionado)
-3. Macros registradas como `model_{model}_call_{method}_method`
-4. Atributos do objeto `attributes` (com conversão camelCase → snake_case e cast aplicado)
-5. Macros de acesso registradas como `model_{model}_get_{attribute}_attribute`
+2. Atributos do objeto `attributes` (com cast aplicado)
+3. Relacionamentos pré-carregados (retorna instância(s) do model relacionado)
+4. Métodos de relacionamento — `xyzRelation()` retorna a instância da relação para consultas e mutações
+5. Atributos virtuais registrados via reducer `model{Model}Get{Attribute}Attribute`
 
 Isso significa que você nunca precisa chamar `getAttribute('nome')` manualmente — apenas acesse `model.nome`.
 

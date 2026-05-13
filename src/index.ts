@@ -18,11 +18,6 @@ import Route from './facades/Route';
 
 import './extensions';
 
-
-import { isValidationError } from './facades/Error';
-
-import Plugin from './contracts/Plugin';
-
 export {
     app,
     App,
@@ -40,10 +35,6 @@ export {
     Model,
     route,
     Route,
-
-    isValidationError,
-
-    Plugin,
 
 };
 

@@ -45,7 +45,7 @@ Documentação completa do pacote `@luminix/core`, a camada JavaScript fundament
 
 | Página | Descrição |
 |--------|-----------|
-| [Plugins](avancado/plugins.md) | Extensão do `@luminix/core` via plugins |
+| [Extensões](avancado/plugins.md) | Extensão do `@luminix/core` via ServiceProvider |
 | [Reducers](avancado/reducers.md) | Pipeline de transformação para Models e rotas |
 
 ---

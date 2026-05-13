@@ -85,7 +85,7 @@ usuarios.count();           // 2
 usuarios.filter(u => u.id > 1).map(u => u.nome).all(); // ['Bob']
 ```
 
-Veja a [documentação da Collection](../../../../support/docs/index.md#collection) para a referência completa.
+Veja a [documentação da Collection](https://github.com/luminix-cms/support/blob/v1.x/docs/index.md#collection) para a referência completa.
 
 ---
 

@@ -35,24 +35,34 @@ const user = new User({ name: 'João Silva', email: 'joao@example.com' });
 
 ## Estendendo models
 
-Você pode criar uma classe que estende o model para adicionar métodos customizados:
+Não é possível estender models usando herança direta com `extends model('user')`, pois `model()` exige que o app esteja inicializado, mas declarações de classe são avaliadas antes de `App.create()`.
+
+A forma correta é usar o reducer `model${Model}` dentro do método `boot()` de um `ServiceProvider`:
 
 ```typescript
-import { model } from '@luminix/core';
+import { Model } from '@luminix/core';
+import { ServiceProvider } from '@luminix/support';
 
-class User extends model('user') {
-    get fullName(): string {
-        return `${this.firstName} ${this.lastName}`;
-    }
-
-    isAdmin(): boolean {
-        return this.role === 'admin';
+export default class MinhaExtensao extends ServiceProvider {
+    boot() {
+        Model.reducer('modelUser', (BaseUser) => class extends BaseUser {
+            get isAdmin() {
+                return this.role === 'admin';
+            }
+        });
     }
 }
-
-const user = await User.find(1);
-console.log(user?.fullName); // 'João Silva'
 ```
+
+A classe estendida será retornada automaticamente pelo facade:
+
+```typescript
+const User = Model.make('user');
+
+User.first().then((user) => console.log(user.isAdmin)); // true ou false
+```
+
+Veja [Reducers → Transformando a classe do model](../avancado/reducers.md#transformando-a-classe-do-model) para mais detalhes.
 
 ## Schema do model
 

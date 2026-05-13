@@ -2,7 +2,7 @@
 
 O sistema de reducers permite customizar e estender o comportamento do `@luminix/core` sem modificar o código-fonte. Reducers são funções puras que transformam um valor — múltiplos reducers para o mesmo nome formam um pipeline executado em ordem de prioridade.
 
-O sistema é fornecido pelo mixin `Reducible` do `@luminix/support`. Consulte a [documentação do @luminix/support](../../../../../support/docs/index.md#reducible) para os detalhes da API.
+O sistema é fornecido pelo mixin `Reducible` do `@luminix/support`. Consulte a [documentação do @luminix/support](https://github.com/luminix-cms/support/blob/v1.x/docs/index.md#reducible) para os detalhes da API.
 
 ---
 
@@ -44,20 +44,33 @@ Model.reducer('modelUserCallGetDisplayNameMethod', (result, user) => {
 user.getDisplayName(); // 'João Silva <joao@example.com>'
 ```
 
-### Transformando a classe: `model`
+### Estendendo a classe de um model específico: `model{Model}`
 
-Permite modificar a classe de qualquer model antes de ser registrado:
+Permite substituir a classe de um model específico antes de ser registrado. Use dentro do `boot()` de um `ServiceProvider`:
+
+```typescript
+Model.reducer('modelUser', (BaseUser) => class extends BaseUser {
+    get isAdmin() {
+        return this.role === 'admin';
+    }
+});
+
+// Agora disponível via facade:
+const User = Model.make('user');
+User.first().then((user) => console.log(user.isAdmin));
+```
+
+### Transformando a base de todos os models: `model`
+
+O reducer `model` é executado para **todos** os models e recebe a classe base de cada um. Use quando precisar de comportamento transversal:
 
 ```typescript
 Model.reducer('model', (ModelClass, abstract) => {
-    if (abstract === 'user') {
-        return class extends ModelClass {
-            get isAdmin() {
-                return this.role === 'admin';
-            }
-        };
-    }
-    return ModelClass;
+    return class extends ModelClass {
+        getType() {
+            return abstract;
+        }
+    };
 });
 ```
 

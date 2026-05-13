@@ -369,9 +369,6 @@ export function BaseModelFactory(
             // }
 
             const reducer = ModelFacade[`model${Str.studly(abstract)}Set${Str.studly(key)}Attribute`];
-            if (typeof reducer !== 'function') {
-                throw new NotReducibleException('ModelFacade');
-            }
 
             // !Reducer `model${ClassName}Set${Key}Attribute`
             const mutated = reducer.bind(ModelFacade)(
@@ -911,7 +908,7 @@ export function ModelFactory(ModelFacade: ModelFacade, abstract: string, CustomM
                         return Reflect.set(target, prop, value);
                     }
                     target.setAttribute(
-                        Str.snake(prop),
+                        prop,
                         value
                     );
                     return true;

@@ -43,12 +43,6 @@ import { app, auth, collect, config, error, log, model, route } from '@luminix/c
 // Facades (acesso direto sem chamada de função)
 import { App, Auth, Config, Error, Http, Log, Model, Route } from '@luminix/core';
 
-// Contrato base para plugins
-import { Plugin } from '@luminix/core';
-
-// Utilitário
-import { isValidationError } from '@luminix/core';
-
 // Tipos TypeScript
 import type { AppFacade, AppContainers, ModelType, BaseModel } from '@luminix/core';
 ```

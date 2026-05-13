@@ -95,7 +95,7 @@ response.throwIfServerError();
 ## Verificando erros de validação
 
 ```typescript
-import { isValidationError } from '@luminix/core';
+import { isValidationError } from '@luminix/support';
 
 try {
     const response = await Http.throw().post('/api/usuarios', dados);
@@ -111,4 +111,4 @@ try {
 
 ## Referência completa do Client
 
-Para a documentação completa do `Client`, `Request` e `Response`, consulte a [documentação do @luminix/support](../../../../support/docs/index.md#http-client).
+Para a documentação completa do `Client`, `Request` e `Response`, consulte a [documentação do @luminix/support](https://github.com/luminix-cms/support/blob/v1.x/docs/index.md#http-client).

@@ -1,43 +1,60 @@
 # Relacionamentos
 
-Os relacionamentos definidos nos models Eloquent com type hints são automaticamente detectados pelo `luminix/frontend` e incluídos no manifest. O `@luminix/core` os expõe como propriedades do model.
+Os relacionamentos definidos nos models Eloquent com type hints são automaticamente detectados pelo `luminix/frontend` e incluídos no manifest. O `@luminix/core` os expõe como propriedades e como métodos de relação.
 
 ## Pré-requisito no Eloquent
 
 Para que um relacionamento seja detectado, o método deve ter type hint de retorno:
 
 ```php
-// app/Models/User.php
-public function posts(): HasMany
+// app/Models/Post.php
+public function author(): BelongsTo
 {
-    return $this->hasMany(Post::class);
+    return $this->belongsTo(User::class);
 }
 
-public function profile(): HasOne
+public function categories(): BelongsToMany
 {
-    return $this->hasOne(UserProfile::class);
+    return $this->belongsToMany(Category::class);
 }
 ```
 
 Sem o type hint, o relacionamento não aparece no manifest.
 
-## Acessando relacionamentos pré-carregados
+## Relacionamentos pré-carregados (eager loading)
 
 Se o backend retornar os dados do relacionamento já carregados (`with()`), o Luminix os converte automaticamente em instâncias do model correspondente:
 
 ```typescript
-// Backend fez: User::with('posts', 'profile')->find(1)
-const user = await User.find(1);
+// Backend fez: Post::with('author', 'categories')->find(1)
+const post = await Post.find(1);
 
-// Relacionamento HasMany → Collection<Model>
-const posts = user.posts;
-posts.each((post) => console.log(post.title));
-posts.first()?.save();
+// BelongsTo → Model | null
+post.author?.name;
 
-// Relacionamento HasOne → Model | null
-const profile = user.profile;
-console.log(profile?.bio);
+// BelongsToMany → Collection<Model> | null
+post.categories?.each((cat) => console.log(cat.name));
 ```
+
+## Lazy loading
+
+Quando o relacionamento não foi carregado pelo backend, a propriedade retorna `undefined`. Para carregá-lo sob demanda, use o método `{nome}Relation()`:
+
+```typescript
+const post = await Post.find(1);
+
+post.author; // undefined — não foi carregado
+
+const author = await post.authorRelation().get();
+
+post.author; // agora está populado
+author === post.author; // true — cached na instância
+```
+
+O padrão de nomenclatura é `{camelCase do nome da relação}Relation`:
+- relação `author` → `post.authorRelation()`
+- relação `categories` → `post.categoriesRelation()`
+- relação `user_profile` → `user.userProfileRelation()`
 
 ## Tipos de relacionamentos suportados
 
@@ -52,65 +69,85 @@ console.log(profile?.bio);
 | `MorphTo` | Polimórfico (lado filho) |
 | `MorphToMany` | Polimórfico muitos para muitos |
 
-## Relações sem dados pré-carregados
+## Consultando relacionamentos
 
-Quando o relacionamento não foi carregado pelo backend, a propriedade retorna `undefined`:
+O objeto de relação retornado por `xyzRelation()` expõe o query builder completo:
 
 ```typescript
-const user = await User.find(1); // sem with('posts')
+// Consultar com filtros
+const adminPosts = await post.categoriesRelation()
+    .where('active', true)
+    .orderBy('name')
+    .get();
 
-user.posts; // undefined — não foi carregado
+// Primeiro resultado
+const firstCategory = await post.categoriesRelation().first();
+
+// Todos os registros (todas as páginas)
+const allCategories = await post.categoriesRelation().all();
+
+// Buscar por ID
+const category = await post.categoriesRelation().find(3);
 ```
 
-Use a propriedade `relations` para inspecionar o estado:
+## Operações em `HasMany`
 
 ```typescript
-const relacao = user.relation('posts');
-// relacao é a instância da relação (HasMany, BelongsTo, etc.)
+const post = await Post.find(1);
+
+// Salva um model relacionado (define automaticamente a foreign key)
+const comment = new Comment({ body: 'Ótimo post!' });
+await post.commentsRelation().save(comment);
+
+// Salva vários de uma vez
+await post.commentsRelation().saveMany([comment1, comment2]);
 ```
 
-## Operações em relacionamentos BelongsToMany
-
-Para relacionamentos `BelongsToMany` e `MorphToMany`, o `luminix/backend` expõe endpoints de sync, attach e detach. Use o facade `Route` para chamá-los diretamente:
+## Operações em `BelongsToMany`
 
 ```typescript
-import { route } from '@luminix/core';
+const post = await Post.find(1);
 
-// Sincroniza os IDs (substitui todos)
-await route().call(['luminix-api.users.posts.sync', { user: 1 }], 
-    (client) => client.withData({ ids: [1, 2, 3] })
-);
+// Sincroniza (substitui todos os IDs)
+await post.categoriesRelation().sync([1, 2, 3]);
 
-// Adiciona sem remover os existentes
-await route().call(['luminix-api.users.posts.attach', { user: 1 }],
-    (client) => client.withData({ ids: [4, 5] })
-);
+// Adiciona sem remover os existentes (com pivot opcional)
+await post.categoriesRelation().attach(4, { order: 1 });
 
 // Remove
-await route().call(['luminix-api.users.posts.detach', { user: 1 }],
-    (client) => client.withData({ ids: [2] })
-);
+await post.categoriesRelation().detach(2);
+
+// Sincroniza com valores de pivot
+await post.categoriesRelation().syncWithPivotValues([1, 2], { featured: true });
+```
+
+Os métodos `sync`, `attach` e `detach` atualizam os dados em cache na instância automaticamente. Para executar a operação sem atualizar o cache local, use as variantes `*Quietly`:
+
+```typescript
+await post.categoriesRelation().syncQuietly([1, 2, 3]);
+await post.categoriesRelation().attachQuietly(4);
+await post.categoriesRelation().detachQuietly(2);
 ```
 
 ## Metadados do relacionamento
 
 ```typescript
-const User = model('user');
-const schema = User.getSchema();
+const Post = model('post');
+const schema = Post.getSchema();
 
 schema.relations;
 // {
-//   posts: {
-//     type: 'HasMany',
-//     model: 'post',
+//   author: {
+//     type: 'BelongsTo',
+//     model: 'user',
 //     foreignKey: 'user_id',
-//     name: 'posts',
+//     name: 'author',
 //   },
-//   profile: {
-//     type: 'HasOne',
-//     model: 'user_profile',
-//     foreignKey: 'user_id',
-//     name: 'profile',
+//   categories: {
+//     type: 'BelongsToMany',
+//     model: 'category',
+//     foreignKey: 'post_id',
+//     name: 'categories',
 //   }
 // }
 ```

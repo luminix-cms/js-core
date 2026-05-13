@@ -35,13 +35,15 @@ User.where('age', '<=', 65)
 User.where('role', '!=', 'guest')
 ```
 
-Closure para agrupamento de condições:
+Passagem de closure — forma semântica alternativa, útil em casos pontuais:
 
 ```typescript
 User.where((query) => {
     query.where('role', 'admin').where('active', true);
 })
 ```
+
+> **Nota:** Todas as condições são encadeadas com `AND`. O `luminix/backend` não suporta agrupamento `OR` dinâmico — filtragem com `OR` deve ser implementada no backend de forma pré-definida (ex.: usando a funcionalidade de "abas" do `luminix/backend`).
 
 ## `whereNull()` / `whereNotNull()`
 
@@ -136,11 +138,24 @@ response.links.next;        // URL da próxima página (null se última)
 response.meta.links;        // [{ url, label, active }]
 ```
 
-Buscando outra página:
+Buscando outra página com tamanho customizado:
 
 ```typescript
-const page2 = await User.query().get({ page: 2, per_page: 25 });
+const page2 = await User.limit(25).get({ page: 2 });
 ```
+
+## `all()`
+
+Retorna todos os registros buscando todas as páginas automaticamente:
+
+```typescript
+const users = await User.all(); // Collection<Model>
+
+// Com filtros
+const admins = await User.where('role', 'admin').all();
+```
+
+> **Atenção:** `all()` faz múltiplas requisições (uma por página). Use com cautela em coleções grandes.
 
 ## Métodos terminais
 
@@ -148,6 +163,7 @@ const page2 = await User.query().get({ page: 2, per_page: 25 });
 |--------|---------|-----------|
 | `get(options?)` | `Promise<ModelPaginatedResponse>` | Executa a consulta com paginação |
 | `first()` | `Promise<Model \| null>` | Primeiro resultado |
+| `all()` | `Promise<Collection<Model>>` | Todos os resultados (todas as páginas) |
 
 ## Interfaces TypeScript
 

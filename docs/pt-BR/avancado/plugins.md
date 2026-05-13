@@ -1,15 +1,15 @@
-# Plugins
+# Extensões
 
-Os plugins permitem encapsular lógica de inicialização, registro de serviços e macros em unidades reutilizáveis.
+As extensões permitem encapsular lógica de inicialização, registro de serviços e reducers em unidades reutilizáveis.
 
-## Estrutura de um plugin
+## Estrutura de uma extensão
 
-Um plugin é um `ServiceProvider` do `@luminix/support`. Crie uma classe que estende `ServiceProvider`:
+Uma extensão é um `ServiceProvider` do `@luminix/support`. Crie uma classe que estende `ServiceProvider`:
 
 ```typescript
 import { ServiceProvider } from '@luminix/support';
 
-export default class MeuPlugin extends ServiceProvider {
+export default class MinhaExtensao extends ServiceProvider {
 
     register() {
         // Registra serviços no container
@@ -18,7 +18,7 @@ export default class MeuPlugin extends ServiceProvider {
     }
 
     boot() {
-        // Inicializa lógica, registra reducers/macros
+        // Inicializa lógica, registra reducers
         // Todos os serviços já estão disponíveis aqui
         const config = this.app.make('config');
         const model  = this.app.make('model');
@@ -34,19 +34,19 @@ export default class MeuPlugin extends ServiceProvider {
 }
 ```
 
-## Instalando um plugin
+## Instalando uma extensão
 
-Passe os providers adicionais com `withProviders()` antes do `create()`:
+Passe os providers com `withProviders()` antes do `create()`:
 
 ```typescript
 import { App } from '@luminix/core';
-import MeuPlugin from './providers/MeuPlugin';
-import OutroPlugin from './providers/OutroPlugin';
+import MinhaExtensao from './providers/MinhaExtensao';
+import OutraExtensao from './providers/OutraExtensao';
 
-App.withProviders([MeuPlugin, OutroPlugin]).create();
+App.withProviders([MinhaExtensao, OutraExtensao]).create();
 ```
 
-## Acessando serviços internos no plugin
+## Acessando serviços internos
 
 Dentro do `boot()`, todos os serviços do `@luminix/core` já estão disponíveis:
 
@@ -62,53 +62,48 @@ boot() {
 }
 ```
 
-## Exemplo: plugin de cast customizado
+## Exemplo: extensão de cast customizado
 
 ```typescript
 import { ServiceProvider } from '@luminix/support';
+import dayjs from 'dayjs';
 
-export default class DayJsCastPlugin extends ServiceProvider {
+export default class DayJsCastExtensao extends ServiceProvider {
 
     boot() {
         const model = this.app.make('model');
 
-        // Adiciona suporte ao cast 'dayjs' em todos os models
-        model.reducer('modelUserGetCreatedAtAttribute', (value) => {
-            if (value instanceof Date) {
-                return dayjs(value);
+        // Converte created_at para objeto Day.js em todos os models
+        model.reducer('model', (ModelClass) => class extends ModelClass {
+            get created_at() {
+                const raw = super.getAttribute('created_at');
+                return raw instanceof Date ? dayjs(raw) : raw;
             }
-            return value;
         });
     }
 }
 ```
 
-## Distribuindo um plugin
-
-Para criar um plugin reutilizável via npm:
+## Distribuindo uma extensão via npm
 
 1. Crie um pacote com a classe do provider
 2. Exporte o provider como default
-3. Documente quais reducers e serviços o plugin registra
+3. Documente quais reducers e serviços a extensão registra
 
 ```typescript
-// meu-luminix-plugin/src/index.ts
-export { default } from './providers/MeuPlugin';
+// minha-extensao-luminix/src/index.ts
+export { default } from './providers/MinhaExtensao';
 ```
 
 Uso pelo consumidor:
 
 ```bash
-npm install meu-luminix-plugin
+npm install minha-extensao-luminix
 ```
 
 ```typescript
 import { App } from '@luminix/core';
-import MeuPlugin from 'meu-luminix-plugin';
+import MinhaExtensao from 'minha-extensao-luminix';
 
-App.withProviders([MeuPlugin]).create();
+App.withProviders([MinhaExtensao]).create();
 ```
-
----
-
-> **Nota:** Versões anteriores do `@luminix/core` usavam uma classe `Plugin` abstrata exportada diretamente pelo pacote. Essa abordagem está **deprecated** — use `ServiceProvider` do `@luminix/support`.

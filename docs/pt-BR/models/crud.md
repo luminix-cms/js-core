@@ -55,10 +55,10 @@ console.log(meta.current_page); // página atual
 console.log(meta.last_page);    // última página
 ```
 
-Com parâmetros de paginação:
+O método `get()` aceita `page` e `replaceLinks` como opções. Para alterar a quantidade de registros por página, use `limit()` antes de `get()`:
 
 ```typescript
-const { data } = await User.get({ per_page: 25, page: 2 });
+const { data } = await User.limit(25).get({ page: 2 });
 ```
 
 ### `Model.find(id)`
@@ -80,6 +80,19 @@ Retorna o primeiro registro:
 ```typescript
 const user = await User.first();
 ```
+
+### `Model.all()` / `Builder.all()`
+
+Retorna **todos** os registros buscando todas as páginas automaticamente. Use com cautela em coleções grandes.
+
+```typescript
+const users = await User.all(); // Collection<Model>
+
+// Com filtros
+const admins = await User.where('role', 'admin').all();
+```
+
+> **Atenção:** `all()` faz múltiplas requisições ao backend (uma por página). O limite máximo por requisição é 150 registros (configurável em `luminix.backend.api.max_per_page`). Para coleções grandes, prefira `get()` com paginação explícita.
 
 ---
 
