@@ -7,9 +7,11 @@ import { Response } from '@luminix/support';
 import Http from '../src/facades/Http';
 
 import makeConfig from './config';
+import { HttpServiceProvider } from './__mocks__/httpservice';
 
-App.withConfiguration(makeConfig());
-App.create();
+App.withProviders([HttpServiceProvider])
+    .withConfiguration(makeConfig())
+    .create();
 
 beforeEach(() => {
     jest.resetModules();
@@ -57,11 +59,11 @@ const mockedResponse = () => Promise.resolve(new Response({
 
 describe('testing builder', () => {
 
-    test.skip('builder use cases', async () => {
+    test('builder use cases', async () => {
 
         const User = App.make('model').make('user');
 
-        (Http.get as any).mockImplementationOnce(() => Promise.resolve(mockedResponse));
+        (Http.get as any).mockImplementationOnce(mockedResponse);
 
         const users = await User.where('branchId', 1)
             .where('roleId', [1, 2, 3])
@@ -69,23 +71,21 @@ describe('testing builder', () => {
             .orderBy('name')
             .searchBy('doe')
             .minified()
-            .all(); // or .get(page) .first() .find() 
+            .all();
 
         expect(users.count()).toBe(2);
-        expect(Http.get).toHaveBeenCalledWith('/api/luminix/users', {
-            params: {
-                where: {
-                    branchId: 1,
-                    roleId: [1, 2, 3],
-                    createdAtGreaterThanOrEquals: '2021-01-01',
-                },
-                minified: true,
-                order_by: 'name:asc',
-                page: 1,
-                per_page: 150,
-                q: 'doe',
-            }
-        });
+        expect(Http.get).toHaveBeenCalledWith('/api/luminix/users');
+        expect(Http.withQueryParameters).toHaveBeenCalledWith(expect.objectContaining({
+            where: expect.objectContaining({
+                branchId: 1,
+                roleId: [1, 2, 3],
+                'createdAt:greaterThanOrEquals': '2021-01-01',
+            }),
+            order_by: 'name:asc',
+            q: 'doe',
+            minified: 1,
+            per_page: 150,
+        }));
     });
 
 });

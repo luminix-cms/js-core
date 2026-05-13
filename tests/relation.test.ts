@@ -29,12 +29,10 @@ afterEach(() => {
 
 const {
     models: {
-        User,
         Post,
         Attachment,
         Comment,
         File,
-        Chair,
     },
     data: {
         users,
@@ -236,9 +234,7 @@ describe('testing relations with eager loading', () => {
         expect(f.attributes).toMatchObject(firstAttachmentFile.attributes);
     });
 
-    test.skip("model 'has one or many' relation", async () => {
-
-    });
+    // test.skip("model 'has one or many' relation") — corpo vazio; coberto pelos testes 'has one' e 'has many' separados.
 
     /* * * * */
 
@@ -296,33 +292,55 @@ describe('testing relations with eager loading', () => {
         );
     });
 
-    test.skip("model 'morph one' relation", async () => {
+    test("model 'morph one' relation", async () => {
+        const fileWithAttachment = new File({
+            id: 1,
+            path: '/path/to/file.jpg',
+            type: 'image',
+            attachment_id: 1,
+            attachment: {
+                id: 1,
+                path: '/path/to/attachment.jpg',
+                type: 'image',
+                attachable_id: 1,
+                attachable_type: 'file',
+                size: null,
+                author_id: null,
+                created_at: '2021-01-01T00:00:00.000Z',
+                updated_at: '2021-01-01T00:00:00.000Z',
+                deleted_at: null,
+            },
+            created_at: '2021-01-01T00:00:00.000Z',
+            updated_at: '2021-01-01T00:00:00.000Z',
+            deleted_at: null,
+        });
 
+        const relation = fileWithAttachment.attachmentRelation();
+
+        expect(relation).toBeInstanceOf(MorphOne);
+        expect(relation.isSingle()).toBe(true);
+        expect(relation.isMultiple()).toBe(false);
+
+        const f = (fileWithAttachment.relation('attachment') as any).items;
+        expect(f).not.toBeNull();
+        expect(f.id).toBe(1);
+        expect(f.path).toBe('/path/to/attachment.jpg');
     });
 
-    test.skip("model 'morph one or many' relation", async () => {
+    // test.skip("model 'morph one or many' relation") — corpo vazio; coberto pelos testes 'morph one' e 'morph many' separados.
 
-    });
+    // test.skip("model 'morph to' relation") — corpo vazio; MorphTo é polimórfico e não há infraestrutura
+    // de teste para resolver o tipo dinamicamente.
 
-    test.skip("model 'morph to' relation", async () => {
-
-    });
-
-    test.skip("model 'morph to many' relation", async () => {
-
-    });
+    // test.skip("model 'morph to many' relation") — nenhum modelo no manifest possui relação MorphToMany.
 
 });
 
 describe('testing relations with lazy loading', () => {
 
-    test.skip("model 'belongs to' relation methods", async () => {
-        // associate/dissociate not yet implemented
-    });
+    // test.skip("model 'belongs to' relation methods") — associate/dissociate não implementados.
 
-    test.skip("model 'belongs to many' relation methods", async () => {
-        // complex BelongsToMany lazy loading - to be reviewed
-    });
+    // test.skip("model 'belongs to many' relation methods") — lazy loading de BelongsToMany não implementado.
 
     test("model 'has many' relation methods", async () => {
         // Create a Post

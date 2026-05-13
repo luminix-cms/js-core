@@ -1,7 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { axios as mockAxios } from '@luminix/support';
-
 import App from '../src/facades/App';
 
 import makeConfig from './config';
@@ -19,50 +17,32 @@ const auth = App.make('auth');
 
 describe('testing authentication', () => {
 
-    /**
-     * @toReview
-     */
-    test.skip('auth check works', async () => {
-        expect(auth).toBeInstanceOf(AuthService);
+    test('auth check works', () => {
+        const config = { get: (key: string) => key === 'auth.user' ? { id: 1 } : undefined } as any;
+        const freshAuth = new AuthService(config, App.make('model'), App.make('route'));
 
-        (mockAxios as any).mockClear();
-        (mockAxios as any).mockImplementationOnce(() => Promise.resolve({
-            data: { auth: { user: { id: 1 } } } 
-        }));
-
-        expect(auth.check()).toBe(true);
-        expect(auth.id()).toBe(1);
+        expect(freshAuth).toBeInstanceOf(AuthService);
+        expect(freshAuth.check()).toBe(true);
+        expect(freshAuth.id()).toBe(1);
     });
 
-    /**
-     * @toReview
-     */
-    test.skip('auth check fails', async () => {
-        expect(auth).toBeInstanceOf(AuthService);
+    test('auth check fails', () => {
+        const config = { get: () => null } as any;
+        const freshAuth = new AuthService(config, App.make('model'), App.make('route'));
 
-        (mockAxios as any).mockClear();
-        (mockAxios as any).mockImplementationOnce(() => Promise.resolve({
-            data: { auth: { user: null } } 
-        }));
-
-        expect(auth.check()).toBe(false);
-        expect(auth.id()).toBeNull();
+        expect(freshAuth).toBeInstanceOf(AuthService);
+        expect(freshAuth.check()).toBe(false);
+        expect(freshAuth.id()).toBeNull();
     });
 
-    /**
-     * @toReview
-     */
-    test.skip('auth user works', async () => {
-        expect(auth).toBeInstanceOf(AuthService);
+    test('auth user works', () => {
+        const config = { get: (key: string) => key === 'auth.user' ? { id: 1, name: 'John Doe' } : undefined } as any;
+        const freshAuth = new AuthService(config, App.make('model'), App.make('route'));
 
-        (mockAxios as any).mockClear();
-        (mockAxios as any).mockImplementationOnce(() => Promise.resolve({
-            data: { auth: { user: { id: 1, name: 'John Doe' } } } 
-        }));
+        expect(freshAuth).toBeInstanceOf(AuthService);
+        expect(freshAuth.check()).toBe(true);
 
-        expect(auth.check()).toBe(true);
-
-        const user = auth.user();
+        const user = freshAuth.user();
 
         if (!user) {
             throw new Error('User not found');

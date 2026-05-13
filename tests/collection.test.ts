@@ -9,7 +9,7 @@ function collect<T = unknown>(items: T[]) {
     return new Collection(items);
 }
 
-describe.skip('collection test', () => {
+describe('collection test', () => {
 
     const collection = collect([
         { name: 'iPhone 6', brand: 'Apple', type: 'phone', released: 2014 },
