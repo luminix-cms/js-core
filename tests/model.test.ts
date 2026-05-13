@@ -5,6 +5,9 @@ import { Response } from '@luminix/support';
 import Http from '../src/facades/Http';
 
 import RouteNotFoundException from '../src/exceptions/RouteNotFoundException';
+import MethodNotImplementedException from '../src/exceptions/MethodNotImplementedException';
+import ModelNotPersistedException from '../src/exceptions/ModelNotPersistedException';
+import Builder from '../src/contracts/Builder';
 
 import models from './__mocks__/appmodels';
 
@@ -522,6 +525,73 @@ describe('testing models', () => {
     test('model getLabel returns labeledBy field value', () => {
         const freshUser = new User({ id: 1, name: 'John Doe', email: 'j@j.com', password: null });
         expect(freshUser.getLabel()).toBe('John Doe');
+    });
+
+    test('model push throws MethodNotImplementedException', async () => {
+        const freshUser = new User({ name: 'Test', email: 'test@test.com', password: null });
+        await expect(freshUser.push()).rejects.toThrow(MethodNotImplementedException);
+    });
+
+    test('model save returns early when no dirty data', async () => {
+        const persistedUser = new User({ id: 1, name: 'Test', email: 'test@test.com', password: null });
+        persistedUser.exists = true;
+        jest.clearAllMocks();
+        // No fields modified — diff() is empty, save() returns undefined without an HTTP call
+        const result = await persistedUser.save();
+        expect(result).toBeUndefined();
+        expect(Http.put).not.toHaveBeenCalled();
+    });
+
+    test('model refresh throws when not persisted', async () => {
+        const freshUser = new User({ name: 'Test', email: 'test@test.com', password: null });
+        await expect(freshUser.refresh()).rejects.toThrow(ModelNotPersistedException);
+    });
+
+    test('model refresh updates attributes on success', async () => {
+        const persistedUser = new User({ id: 1, name: 'Old Name', email: 'test@test.com', password: null });
+        persistedUser.exists = true;
+
+        (Http.get as any).mockImplementationOnce(() => Promise.resolve(new Response({
+            config: { headers: { 'Content-Type': 'application/json' } as any },
+            data: { id: 1, name: 'Refreshed Name', email: 'test@test.com', password: null },
+            headers: { 'Content-Type': 'application/json' },
+            status: 200,
+            statusText: 'OK',
+        })));
+
+        await persistedUser.refresh();
+
+        expect(persistedUser.name).toBe('Refreshed Name');
+    });
+
+    test('model instance update method', async () => {
+        const persistedUser = new User({ id: 1, name: 'Old', email: 'test@test.com', password: null });
+        persistedUser.exists = true;
+
+        (Http.put as any).mockImplementationOnce(() => Promise.resolve(new Response({
+            config: { headers: { 'Content-Type': 'application/json' } as any },
+            data: { id: 1, name: 'Updated Name', email: 'test@test.com', password: null },
+            headers: { 'Content-Type': 'application/json' },
+            status: 200,
+            statusText: 'OK',
+        })));
+
+        await persistedUser.update({ name: 'Updated Name' });
+
+        expect(Http.put).toHaveBeenCalledWith('/api/luminix/users/1');
+        expect(Http.withData).toHaveBeenCalledWith({ name: 'Updated Name' });
+        expect(persistedUser.name).toBe('Updated Name');
+    });
+
+    test('static builder shortcuts return chainable builder', () => {
+        expect(User.whereNull('deleted_at')).toBeInstanceOf(Builder);
+        expect(User.whereNotNull('name')).toBeInstanceOf(Builder);
+        expect(User.whereBetween('id', [1, 10])).toBeInstanceOf(Builder);
+        expect(User.orderBy('name', 'desc')).toBeInstanceOf(Builder);
+        expect(User.searchBy('john')).toBeInstanceOf(Builder);
+        expect(User.minified()).toBeInstanceOf(Builder);
+        expect(User.limit(5)).toBeInstanceOf(Builder);
+        expect(User.where('email', 'test@test.com')).toBeInstanceOf(Builder);
     });
 
 });

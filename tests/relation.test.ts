@@ -12,6 +12,9 @@ import HasOne from '../src/contracts/Relation/HasOne';
 import MorphMany from '../src/contracts/Relation/MorphMany';
 import MorphOne from '../src/contracts/Relation/MorphOne';
 import MorphTo from '../src/contracts/Relation/MorphTo';
+import NotModelException from '../src/exceptions/NotModelException';
+import ModelInvalidRelatedTypeException from '../src/exceptions/ModelInvalidRelatedTypeException';
+import ModelNotPersistedException from '../src/exceptions/ModelNotPersistedException';
 
 import models from './__mocks__/appmodels';
 
@@ -33,6 +36,7 @@ const {
         Attachment,
         Comment,
         File,
+        User,
     },
     data: {
         users,
@@ -408,6 +412,127 @@ describe('testing relations with lazy loading', () => {
     });
 
     /* * * * */
+
+    test("BelongsTo associate() sets foreign key via parent.update()", async () => {
+        const parentPost = new Post({ id: 1, title: 'Test', published_at: null, author_id: null });
+        parentPost.exists = true;
+
+        const relatedUser = new User({ id: 5, name: 'Author', email: 'a@a.com', password: null });
+        relatedUser.exists = true;
+
+        const relation = parentPost.authorRelation() as BelongsTo;
+
+        _put({ id: 1, title: 'Test', published_at: null, author_id: 5 });
+        await relation.associate(relatedUser);
+
+        expect(Http.put).toHaveBeenCalledWith('/api/luminix/posts/1');
+        expect(Http.withData).toHaveBeenCalledWith({ author_id: 5 });
+    });
+
+    test("BelongsTo associate() throws when item not persisted", async () => {
+        const parentPost = new Post({ id: 1, title: 'Test', published_at: null, author_id: null });
+        parentPost.exists = true;
+
+        const freshUser = new User({ name: 'Ghost', email: 'g@g.com', password: null });
+
+        const relation = parentPost.authorRelation() as BelongsTo;
+
+        await expect(relation.associate(freshUser)).rejects.toThrow(ModelNotPersistedException);
+    });
+
+    test("BelongsTo associate() throws for wrong model type", async () => {
+        const parentPost = new Post({ id: 1, title: 'Test', published_at: null, author_id: null });
+        parentPost.exists = true;
+
+        const wrongModel = new Post({ id: 2, title: 'Other', published_at: null, author_id: null });
+        wrongModel.exists = true;
+
+        const relation = parentPost.authorRelation() as BelongsTo;
+
+        await expect(relation.associate(wrongModel)).rejects.toThrow(ModelInvalidRelatedTypeException);
+    });
+
+    test("BelongsTo associate() throws when item is not a model", async () => {
+        const parentPost = new Post({ id: 1, title: 'Test', published_at: null, author_id: null });
+        parentPost.exists = true;
+
+        const relation = parentPost.authorRelation() as BelongsTo;
+
+        await expect(relation.associate('not-a-model' as any)).rejects.toThrow(NotModelException);
+    });
+
+    test("BelongsTo dissociate() clears foreign key via parent.update()", async () => {
+        const parentPost = new Post({ id: 1, title: 'Test', published_at: null, author_id: 5 });
+        parentPost.exists = true;
+
+        const relation = parentPost.authorRelation() as BelongsTo;
+
+        _put({ id: 1, title: 'Test', published_at: null, author_id: null });
+        await relation.dissociate();
+
+        expect(Http.put).toHaveBeenCalledWith('/api/luminix/posts/1');
+        expect(Http.withData).toHaveBeenCalledWith({ author_id: null });
+    });
+
+    test("MorphTo associate() sets morph id and type via parent.update()", async () => {
+        const parentAttachment = new Attachment({
+            id: 10, path: '/a.jpg', type: 'image',
+            attachable_id: null, attachable_type: null, size: null, author_id: null,
+        });
+        parentAttachment.exists = true;
+
+        const relatedPost = new Post({ id: 20, title: 'Test', published_at: null, author_id: null });
+        relatedPost.exists = true;
+
+        const relation = parentAttachment.attachableRelation() as MorphTo;
+        expect(relation).toBeInstanceOf(MorphTo);
+
+        _put({ id: 10, path: '/a.jpg', type: 'image', attachable_id: 20, attachable_type: 'post' });
+        await relation.associate(relatedPost);
+
+        expect(Http.put).toHaveBeenCalledWith('/api/luminix/attachments/10');
+        expect(Http.withData).toHaveBeenCalledWith({ attachable_id: 20, attachable_type: 'post' });
+    });
+
+    test("MorphTo associate() saves item first if not persisted", async () => {
+        const parentAttachment = new Attachment({
+            id: 10, path: '/a.jpg', type: 'image',
+            attachable_id: null, attachable_type: null, size: null, author_id: null,
+        });
+        parentAttachment.exists = true;
+
+        const freshPost = new Post({ title: 'New Post', published_at: null, author_id: null });
+        // freshPost.exists = false (default)
+
+        const relation = parentAttachment.attachableRelation() as MorphTo;
+
+        // First call: save the new post (POST store)
+        _post({ id: 99, title: 'New Post', published_at: null, author_id: null });
+        // Second call: update the attachment with morph keys (PUT update)
+        _put({ id: 10, path: '/a.jpg', type: 'image', attachable_id: 99, attachable_type: 'post' });
+
+        await relation.associate(freshPost);
+
+        expect(Http.post).toHaveBeenCalledWith('/api/luminix/posts');
+        expect(Http.put).toHaveBeenCalledWith('/api/luminix/attachments/10');
+        expect(Http.withData).toHaveBeenCalledWith({ attachable_id: 99, attachable_type: 'post' });
+    });
+
+    test("MorphTo dissociate() clears morph id and type via parent.update()", async () => {
+        const parentAttachment = new Attachment({
+            id: 10, path: '/a.jpg', type: 'image',
+            attachable_id: 20, attachable_type: 'post', size: null, author_id: null,
+        });
+        parentAttachment.exists = true;
+
+        const relation = parentAttachment.attachableRelation() as MorphTo;
+
+        _put({ id: 10, path: '/a.jpg', type: 'image', attachable_id: null, attachable_type: null });
+        await relation.dissociate();
+
+        expect(Http.put).toHaveBeenCalledWith('/api/luminix/attachments/10');
+        expect(Http.withData).toHaveBeenCalledWith({ attachable_id: null, attachable_type: null });
+    });
 
     test("model 'morph many' relation methods", async () => {
         // Create a Post
