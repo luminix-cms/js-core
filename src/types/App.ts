@@ -5,7 +5,6 @@ import {
 
 import { AppConfiguration, ConfigFacade } from './Config';
 
-import { PluginInterface } from './Plugin';
 import { LogFacade } from './Log';
 
 import {
@@ -19,9 +18,6 @@ import { ErrorFacade } from './Error';
 import { RelationInterface } from './Relation';
 import { AuthFacade } from './Auth';
 import { HttpFacade } from './Http';
-
-type Plugin = PluginInterface<AppFacade, AppContainers>;
-
 
 export type GlobalModelEvents = {
     'save': (e: ModelGlobalEvent) => void,

@@ -35,6 +35,7 @@ jobs:
         - name: Build, Tag & Publish
           run: |
             npm install
+            npm run test
             npm run build
             npm version ${{ steps.semver.outputs.version }} --no-git-tag-version
             echo "Publishing version ${{ steps.semver.outputs.version }}..."
