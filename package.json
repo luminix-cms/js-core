@@ -13,12 +13,10 @@
     "lint:fix": "eslint ./src ./tests --ext .ts --fix",
     "test": "jest",
     "test:coverage": "jest --coverage",
-    "ci": "npm run lint && npm run test",
-    "publish:beta": "npm run build && npm publish --tag beta"
+    "ci": "npm run lint && npm run test"
   },
   "author": "",
   "license": "MIT",
-  "description": "> Projeto em desenvolvimento",
   "devDependencies": {
     "@babel/core": "^7.26.0",
     "@babel/preset-env": "^7.26.0",
