@@ -21,8 +21,8 @@ Biblioteca JavaScript fundamental do stack Luminix. Agnóstica de framework fron
 ## Pré-requisitos
 
 Uma aplicação Laravel 11 com:
-- [`luminix/backend`](../backend/README.md) — gera a API REST automaticamente
-- [`luminix/frontend`](../frontend/README.md) — injeta os dados de boot na página via `@luminixEmbed()`
+- [`luminix/backend`](https://github.com/luminix-cms/backend) — gera a API REST automaticamente
+- [`luminix/frontend`](https://github.com/luminix-cms/frontend) — injeta os dados de boot na página via `@luminixEmbed()`
 
 ## Instalação
 
