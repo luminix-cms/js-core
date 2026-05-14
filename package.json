@@ -5,6 +5,7 @@
   "module": "dist/core.js",
   "types": "types/index.d.ts",
   "type": "module",
+  "repository": "luminix-cms/js-core",
   "scripts": {
     "prebuild": "rm -rf types",
     "build": "tsc && vite build",

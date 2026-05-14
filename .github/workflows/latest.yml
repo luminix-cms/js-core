@@ -1,9 +1,9 @@
-name: Publish beta version to NPM
+name: Publish latest version to NPM
 
 on:
   push:
     branches:
-      - v0.x
+      - v1.x
 
 permissions:
   id-token: write
@@ -31,7 +31,6 @@ jobs:
           with:
             tag_prefix: v
             version_format: "${major}.${minor}.${patch}"
-            enable_prerelease_mode: true
 
         - name: Build, Tag & Publish
           run: |
@@ -39,7 +38,7 @@ jobs:
             npm run build
             npm version ${{ steps.semver.outputs.version }} --no-git-tag-version
             echo "Publishing version ${{ steps.semver.outputs.version }}..."
-            npm publish --tag beta
+            npm publish
 
         - name: Publish Github Release
           uses: softprops/action-gh-release@v2
@@ -47,4 +46,3 @@ jobs:
             tag_name: ${{ steps.semver.outputs.version_tag }}
             target_commitish: ${{ github.sha }}
             draft: false
-            prerelease: true
