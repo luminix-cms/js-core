@@ -587,21 +587,19 @@ export function BaseModelFactory(
                         : 'store'),
                 );
 
-                if (response.successful()) {
-                    this.makeAttributes(response.json());
-                    this.exists = true;
-                    this.dispatchSaveEvent();
-                    if (!existedBeforeSaving) {
-                        this.wasRecentlyCreated = true;
-                        this.dispatchCreateEvent(response.json());
-                    } else {
-                        this.dispatchUpdateEvent(response.json());
-                    }
-                    
-                    return response;
+                response.throw();
+
+                this.makeAttributes(response.json());
+                this.exists = true;
+                this.dispatchSaveEvent();
+                if (!existedBeforeSaving) {
+                    this.wasRecentlyCreated = true;
+                    this.dispatchCreateEvent(response.json());
+                } else {
+                    this.dispatchUpdateEvent(response.json());
                 }
-    
-                throw response;
+                
+                return response;
             } catch (error) {
                 this.dispatchErrorEvent(error, 'save');
                 throw error;
@@ -619,13 +617,12 @@ export function BaseModelFactory(
                     undefined,
                     this.getErrorBag('delete'),
                 );
-    
-                if (response.noContent()) {
-                    this.dispatchDeleteEvent();
-                    return response;
-                }
-    
-                throw response;
+
+                response.throw();
+
+                this.dispatchDeleteEvent();
+                
+                return response;
             } catch (error) {
                 this.dispatchErrorEvent(error, 'delete');
                 throw error;
@@ -645,13 +642,10 @@ export function BaseModelFactory(
                     this.getErrorBag('update'),
                 );
 
-                if (response.ok()) {
-                    this.makeAttributes(response.json());
-                    this.dispatchUpdateEvent(response.json());
-                    return;
-                }
+                response.throw();
 
-                throw response;
+                this.makeAttributes(response.json());
+                this.dispatchUpdateEvent(response.json());
             } catch (error) {
                 this.dispatchErrorEvent(error, 'save');
                 throw error;
@@ -666,13 +660,12 @@ export function BaseModelFactory(
                     (client) => client.withQueryParameters({ force: true }),
                     this.getErrorBag('forceDelete'),
                 );
-    
-                if (response.noContent()) {
-                    this.dispatchDeleteEvent(true);
-                    return response;
-                }
-    
-                throw response;
+
+                response.throw();
+
+                this.dispatchDeleteEvent(true);
+
+                return response;
             } catch (error) {
                 this.dispatchErrorEvent(error, 'forceDelete');
                 throw error;
@@ -686,13 +679,12 @@ export function BaseModelFactory(
                     (client) => client.withQueryParameters({ restore: true }),
                     this.getErrorBag('restore'),
                 );
-    
-                if (response.ok()) {
-                    this.dispatchRestoreEvent();
-                    return response;
-                }
-    
-                throw response;
+
+                response.throw();
+                
+                this.dispatchRestoreEvent();
+
+                return response;
             } catch (error) {
                 this.dispatchErrorEvent(error, 'restore');
                 throw error;
