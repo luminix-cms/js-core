@@ -149,12 +149,6 @@ export function BaseModelFactory(
                 newAttributes[key] = null;
             });
     
-            if (relations) {
-                Object.keys(relations).forEach((key) => {
-                    this.relation(Str.camel(key))!.make(attributes[key]);
-                });
-            }
-
             if (!this.validateJsonObject(newAttributes)) {
                 if (Config.get('app.env', 'production') === 'production') {
                     throw new TypeError(`[Luminix] Invalid attributes for model "${abstract}"`);
@@ -169,6 +163,14 @@ export function BaseModelFactory(
             this._attributes.set('.', newAttributes);
             this._original = newAttributes;
             this._changedKeys.splice(0, this._changedKeys.length);
+
+            // attributes must be in place before hydrating relations:
+            // MorphTo.getRelated() reads the `{name}_type` attribute of this model
+            if (relations) {
+                Object.keys(relations).forEach((key) => {
+                    this.relation(Str.camel(key))!.make(attributes[key]);
+                });
+            }
         }
     
         private makePrimaryKeyReplacer(): RouteReplacer {

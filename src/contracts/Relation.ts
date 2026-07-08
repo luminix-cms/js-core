@@ -37,12 +37,12 @@ export default class Relation implements RelationInterface {
     }
 
     make(data: JsonValue): void {
-        const Model = this.getRelated();
-
         if (data === null || typeof data === 'undefined') {
             this.set(null);
             return;
         }
+
+        const Model = this.getRelated();
 
         if (this.isSingle()) {
             if (typeof data !== 'object' || Array.isArray(data)) {
