@@ -220,4 +220,28 @@ describe('testing builder', () => {
         }));
     });
 
+    test('builder searchBy with empty string does not send q param', async () => {
+        const User = App.make('model').make('user');
+
+        (Http.get as any).mockImplementationOnce(mockedResponse);
+
+        await User.query().searchBy('').all();
+
+        expect(Http.withQueryParameters).toHaveBeenCalledWith(expect.not.objectContaining({
+            q: expect.anything(),
+        }));
+    });
+
+    test('builder searchBy with empty string clears a previous term', async () => {
+        const User = App.make('model').make('user');
+
+        (Http.get as any).mockImplementationOnce(mockedResponse);
+
+        await User.query().searchBy('doe').searchBy('').all();
+
+        expect(Http.withQueryParameters).toHaveBeenCalledWith(expect.not.objectContaining({
+            q: expect.anything(),
+        }));
+    });
+
 });

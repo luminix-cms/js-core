@@ -159,6 +159,11 @@ class Builder extends EventSource<BuilderEventMap> implements BuilderInterface {
     }
 
     searchBy(term: string): this {
+        if (term === '') {
+            this.bag.delete('q');
+            return this;
+        }
+
         this.bag.set('q', term);
         return this;
     }
