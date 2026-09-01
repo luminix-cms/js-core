@@ -17,6 +17,7 @@ import {
     ModelRawPaginatedResponse
 } from '../types/Model';
 
+import ModelQueryFailedException from '../exceptions/ModelQueryFailedException';
 import ModelWithoutPrimaryKeyException from '../exceptions/ModelWithoutPrimaryKeyException';
 import { ModelFacade } from '../types/App';
 import { RouteFacade } from '../types/Route';
@@ -205,6 +206,10 @@ class Builder extends EventSource<BuilderEventMap> implements BuilderInterface {
                 `luminix.${this.abstract}.index`,
                 (client) => client.withQueryParameters(this.bag.all())
             );
+
+            if (response.failed()) {
+                throw new ModelQueryFailedException(this.abstract, response);
+            }
     
             const Model = this.services.model.make(this.abstract);
 

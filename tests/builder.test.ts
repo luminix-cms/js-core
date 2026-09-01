@@ -51,6 +51,18 @@ const mockedSingleResponse = () => Promise.resolve(new Response({
     statusText: 'OK',
 }));
 
+const mockedFailedResponse = () => Promise.resolve(new Response({
+    config: {
+        headers: { 'Content-Type': 'application/json' } as any,
+    },
+    data: {
+        message: '[Luminix] Invalid filter provided for model "App\\Models\\User"',
+    },
+    headers: { 'Content-Type': 'application/json' },
+    status: 500,
+    statusText: 'Internal Server Error',
+}));
+
 const mockedResponse = () => Promise.resolve(new Response({
     config: {
         headers: { 'Content-Type': 'application/json' } as any,
@@ -242,6 +254,17 @@ describe('testing builder', () => {
         expect(Http.withQueryParameters).toHaveBeenCalledWith(expect.not.objectContaining({
             q: expect.anything(),
         }));
+    });
+
+    test('builder throws the failed response message instead of mapping its body', async () => {
+        const User = App.make('model').make('user');
+
+        (Http.get as any).mockImplementationOnce(mockedFailedResponse);
+
+        await expect(User.query().all()).rejects.toThrow(
+            '[Luminix] Query for model "user" failed with status 500: '
+            + '[Luminix] Invalid filter provided for model "App\\Models\\User"'
+        );
     });
 
 });

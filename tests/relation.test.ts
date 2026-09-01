@@ -766,7 +766,7 @@ describe('testing MorphToMany relation', () => {
         expect(relation.isMultiple()).toBe(true);
     });
 
-    test("MorphToMany query() adds morph where conditions", async () => {
+    test("MorphToMany query() filters by the inverse relation only", async () => {
         const postInst = new Post({ id: 42, title: 'Test', published_at: null, author_id: null });
         postInst.exists = true;
 
@@ -781,10 +781,26 @@ describe('testing MorphToMany relation', () => {
         await relation.all();
 
         expect(Http.withQueryParameters).toHaveBeenCalledWith(expect.objectContaining({
-            where: expect.objectContaining({
-                taggable_id: 42,
-                taggable_type: 'post',
-            }),
+            where: { posts: 42 },
+        }));
+    });
+
+    test("MorphToMany query() from the morphed side filters by the inverse relation only", async () => {
+        const tagInst = new Tag({ id: 7, name: 'javascript' });
+        tagInst.exists = true;
+
+        const relation = tagInst.postsRelation() as MorphToMany;
+
+        _get({
+            data: [{ id: 1, title: 'Test', published_at: null, author_id: null }],
+            meta: { current_page: 1, last_page: 1, per_page: 150, total: 1, from: 1, to: 1, links: [] },
+            links: { first: '', last: '', prev: null, next: null },
+        });
+
+        await relation.all();
+
+        expect(Http.withQueryParameters).toHaveBeenCalledWith(expect.objectContaining({
+            where: { tags: 7 },
         }));
     });
 
