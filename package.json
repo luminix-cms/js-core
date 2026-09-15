@@ -9,6 +9,7 @@
   "scripts": {
     "prebuild": "rm -rf types",
     "build": "tsc && vite build",
+    "postbuild": "cp -R agents/. dist/",
     "lint": "eslint ./src ./tests --ext .ts",
     "lint:fix": "eslint ./src ./tests --ext .ts --fix",
     "test": "jest",
