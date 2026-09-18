@@ -9,3 +9,6 @@ vite.config.js
 index.html
 jest.config.js
 babel.config.json
+/AGENTS.md
+/CLAUDE.md
+/agents/
